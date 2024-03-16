@@ -1,0 +1,38 @@
+{
+  "expo": {
+    "name": "CLIENTE",
+    "slug": "CLIENTE",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "android":{
+      "adaptiveIcon": {
+            "foregroundImage": "./src/assets/adaptive-icon.png",
+            "backgroundColor": "#FFFFFF"
+          },
+          "config": {
+            "googleMaps": {
+              "apiKey": "AIzaSyCY7snN6oG0cQwBVk-TP4VNfViybTz-AWY"
+            }
+          }
+    },
+    "ios": {
+          "supportsTablet": true,
+          "config": {
+              "googleMapsApiKey": "AIzaSyCY7snN6oG0cQwBVk-TP4VNfViybTz-AWY"
+          }
+     },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    }
+  }
+}
