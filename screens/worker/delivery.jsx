@@ -1,39 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Image, StyleSheet, FlatList, TouchableOpacity, Modal, ScrollView, ImageBackground, TextInput, Button } from 'react-native';
 import colors from '../../constants/colors';
-import Splash from '../all/splash';
 
 const Delivery = () => {
     const [selectedMeat, setSelectedMeat] = useState(null);
     const [totalPrice, setTotalPrice] = useState(0);
-    const [loading, setLoading] = useState(true); // Estado para controlar si el splash está cargando
     const [commentModalVisible, setCommentModalVisible] = useState(false);
     const [comments, setComments] = useState('');
 
-    useEffect(() => {
-      // Simula una carga inicial
-      setTimeout(() => {
-        setLoading(false); // Después de 2 segundos, establece el estado de carga en falso
-      }, 2000); // 2000 milisegundos (2 segundos)
-    }, []);
 
-    if (loading) {
-      return <Splash />; // Si loading es verdadero, muestra el splash screen
-    }
-
-    // Define la lista de productos fuera del componente de entrega
     const meats = [
       { id: '1', name: 'Filete de cerdo', price: 10.99, imageUrl: 'https://ensalpicadas.com/wp-content/uploads/2022/06/Filete-de-Cerdo-Jugoso-5.jpg'},
       { id: '2', name: 'Costillas de cerdo', price: 8.49, imageUrl: 'https://carnivalmeatlab.com/wp-content/uploads/2021/06/Costillas-de-cerdo-SIN-NOMBRE.jpg'},
-      { id: '3', name: 'cabeza de cerdo', price: 6.99, imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/5/5d/Cabezadecerdo-04614.jpg'},
+      { id: '3', name: 'Cabeza de cerdo', price: 6.99, imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/5/5d/Cabezadecerdo-04614.jpg'},
       { id: '4', name: 'Chuletas de cerdo', price: 12.99, imageUrl: 'https://espanol.kingsford.com/wp-content/uploads/2017/02/KFD_CiderBrinedPorkChopswithBrownSugarApplewoodBBQSauce35335_WEB.jpg'},
       { id: '5', name: 'Carne molida de cerdo', price: 7.99, imageUrl: 'https://carnesrikatas.com/wp-content/uploads/2023/03/molida-de-cerdo-min-convert.io-1.webp'},
     ];
 
-    // Calcula el total sumando los precios de todos los productos
     useEffect(() => {
-      const total = meats.reduce((accumulator, current) => accumulator + current.price, 0);
-      setTotalPrice(total);
+      if (meats.length > 0) {
+        const total = meats.reduce((acc, meat) => acc + meat.price, 0);
+        setTotalPrice(total);
+      }
     }, [meats]);
 
     const MeatCard = ({ name, price, imageUrl }) => {
@@ -55,8 +43,6 @@ const Delivery = () => {
     };
 
     const handleDelivery = () => {
-      // Lógica para entregar los productos
-      // Aquí puedes enviar los productos seleccionados a una API o hacer cualquier otra acción necesaria
       setCommentModalVisible(true);
       console.log("Productos entregados:", selectedMeat);
       setSelectedMeat(null);
@@ -104,12 +90,14 @@ const Delivery = () => {
 
         <View style={styles.footer}>
           <Text style={styles.totalPrice}>Total: ${totalPrice.toFixed(2)}</Text>
-          <TouchableOpacity style={styles.deliveryButton} onPress={handleDelivery}>
-            <Text style={styles.deliveryButtonText}>Entregar</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.rejectButton} onPress={handleReject}>
-            <Text style={styles.rejectButtonText}>Rechazar</Text>
-          </TouchableOpacity>
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity style={styles.deliveryButton} onPress={handleDelivery}>
+              <Text style={styles.deliveryButtonText}>Entregar</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.rejectButton} onPress={handleReject}>
+              <Text style={styles.rejectButtonText}>Rechazar</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         <Modal visible={commentModalVisible} transparent={true} animationType="fade">
@@ -197,7 +185,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   footer: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     justifyContent: 'space-between',
     alignItems: 'center',
     backgroundColor: '#f0f0f0',
@@ -214,12 +202,17 @@ const styles = StyleSheet.create({
   totalPrice: {
     fontSize: 18,
     fontWeight: 'bold',
+    marginBottom: 30,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
   },
   deliveryButton: {
     backgroundColor: colors.red3,
     borderRadius: 10,
     paddingVertical: 10,
     paddingHorizontal: 20,
+    marginRight: 10,
   },
   deliveryButtonText: {
     color: '#fff',
