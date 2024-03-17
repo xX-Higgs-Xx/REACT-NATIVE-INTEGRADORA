@@ -12,6 +12,7 @@ import Orders from './screens/worker/orders';
 import Profile from './screens/worker/profile';
 import Header from './screens/worker/header';
 import OrderMaps from './screens/worker/orderMaps';
+import Delivery from './screens/worker/delivery';
 
 const Stack = createStackNavigator();
 
@@ -42,7 +43,12 @@ const App = () => {
             <HeaderIcon name="chevron-back" />
           </View>
         ), }} />
-        <Stack.Screen name="OrderMaps" component={OrderMaps} options={{ ...headerOptions, headerTitle: () => <Header name="Order Maps" />, headerLeft: () => (
+        <Stack.Screen name="OrderMaps" component={OrderMaps} options={{ ...headerOptions, headerTitle: () => <Header name="Entrega" />, headerLeft: () => (
+          <View>
+            <HeaderIcon name="chevron-back" />
+          </View>
+        ), }} />
+        <Stack.Screen name="Delivery" component={Delivery} options={{ ...headerOptions, headerTitle: () => <Header name="Entrega" />, headerLeft: () => (
           <View>
             <HeaderIcon name="chevron-back" />
           </View>

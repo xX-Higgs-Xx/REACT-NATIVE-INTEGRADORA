@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Dimensions, StyleSheet, Alert, TouchableOpacity, Text } from 'react-native';
+import { View, Dimensions, StyleSheet, Alert, TouchableOpacity, Text, Linking } from 'react-native';
 import MapView, { PROVIDER_GOOGLE, Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
 import colors from '../../constants/colors';
@@ -31,9 +31,11 @@ const OrderMaps = ({ route, navigation }) => {
   const handleShowUserLocation = async () => {
     let { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== 'granted') {
+      // Si el usuario no otorga permiso, muestra una alerta y regresa a la pantalla anterior
       Alert.alert(
         'Necesitas dar permisos para continuar',
-        'Por favor, otorga permisos de ubicación para continuar.'
+        'Por favor, otorga permisos de ubicación para continuar.',
+        [{ text: 'OK', onPress: () => navigation.goBack() }]
       );
       return;
     }
@@ -46,6 +48,17 @@ const OrderMaps = ({ route, navigation }) => {
       latitudeDelta: 0.003,
       longitudeDelta: 0.003,
     });
+  };
+
+  const handleDirections = () => {
+    const origin = `${userLocation.latitude},${userLocation.longitude}`;
+    const destination = `${orderLatitude},${orderLongitude}`;
+    const url = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}`;
+    Linking.openURL(url);
+  };
+
+  const handleDeliverOrder = () => {
+    navigation.navigate('Delivery', { orderLatitude, orderLongitude });
   };
 
   return (
@@ -67,8 +80,11 @@ const OrderMaps = ({ route, navigation }) => {
         )}
         <Marker coordinate={{ latitude: orderLatitude, longitude: orderLongitude }} title='Punto de entrega' />
       </MapView>
-      <TouchableOpacity style={styles.locationButton} onPress={handleShowUserLocation}>
-        <Text style={styles.buttonText}>Mi ubicación</Text>
+      <TouchableOpacity style={styles.directionsButton} onPress={handleDirections}>
+        <Text style={styles.buttonText}>Indicaciones</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.deliverButton} onPress={handleDeliverOrder}>
+        <Text style={styles.buttonText}>Entregar pedido</Text>
       </TouchableOpacity>
     </View>
   );
@@ -85,9 +101,18 @@ const styles = StyleSheet.create({
     width: Dimensions.get('window').width,
     height: Dimensions.get('window').height,
   },
-  locationButton: {
+  directionsButton: {
     position: 'absolute',
-    bottom: 20,
+    top: 20,
+    left: 20,
+    backgroundColor: colors.red3,
+    borderRadius: 10,
+    padding: 10,
+  },
+  deliverButton: {
+    position: 'absolute',
+    top: 20,
+    right: 20,
     backgroundColor: colors.red3,
     borderRadius: 10,
     padding: 10,

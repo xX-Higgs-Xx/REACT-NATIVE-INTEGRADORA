@@ -7,12 +7,12 @@ const Orders = () => {
 
   // Datos de ejemplo de los pedidos con latitud y longitud
   const ordersData = [
-    { pedido: 'Arturo', status: 'En proceso', latitud: 20.640549764484504, longitud: -105.23411187517505 }, //Vallarta
-    { pedido: 'Karla', status: 'En proceso', latitud: 19.420528182911426, longitud: -102.06625929845292 }, //Michoacan
+    { pedido: 'Arturo', status: 'En proceso', latitud: 18.851579946298852, longitud: -99.18820521453638 }, //Zapata
+    { pedido: 'Karla', status: 'En proceso', latitud: 18.867154358788426, longitud: -99.20995876849778 }, //3 de Mayo
     { pedido: 'Miguel', status: 'En proceso', latitud: 18.923253506208972, longitud: -99.23500950165311 }, //Cuernavaca
-    { pedido: 'Jared', status: 'En proceso', latitud: 20.640549764484504, longitud: -105.23411187517505 }, //Vallarta
-    { pedido: 'Jose', status: 'En proceso', latitud: 19.420528182911426, longitud: -102.06625929845292 }, //Michoacan
-    { pedido: 'Pedro', status: 'En proceso', latitud: 18.923253506208972, longitud: -99.23500950165311 }, //Cuernavaca
+    { pedido: 'Luis', status: 'En proceso', latitud: 18.851579946298852, longitud: -99.18820521453638 }, //Zapata
+    { pedido: 'Angel', status: 'En proceso', latitud: 18.867154358788426, longitud: -99.20995876849778 }, //3 de Mayo
+    { pedido: 'Jose', status: 'En proceso', latitud: 18.923253506208972, longitud: -99.23500950165311 }, //Cuernavaca
   ];
 
   // Filtrar los pedidos con estado "En proceso"
