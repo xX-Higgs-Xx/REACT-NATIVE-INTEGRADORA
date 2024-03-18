@@ -5,6 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import { View, TouchableOpacity } from 'react-native';
 import colors from './constants/colors';
 import { Ionicons } from '@expo/vector-icons';
+import { FontAwesome5 } from '@expo/vector-icons';
 
 import SplashScreen from './screens/all/splash';
 import LoginScreen from './screens/all/login';
@@ -13,6 +14,9 @@ import Profile from './screens/worker/profile';
 import Header from './screens/worker/header';
 import OrderMaps from './screens/worker/orderMaps';
 import Delivery from './screens/worker/delivery';
+
+import Index from './screens/customer/index';
+import ShoppingCart from './screens/customer/shoppingCart';
 
 const Stack = createStackNavigator();
 
@@ -33,6 +37,7 @@ const App = () => {
       <Stack.Navigator initialRouteName="Splash">
         <Stack.Screen name="Splash" component={SplashScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
+        {/* worker */}
         <Stack.Screen name="Orders" component={Orders} options={{ ...headerOptions, headerTitle: () => <Header name="Pedidos" />, headerLeft: () => (
           <View>
             <HeaderIcon name="person" />
@@ -49,6 +54,21 @@ const App = () => {
           </View>
         ), }} />
         <Stack.Screen name="Delivery" component={Delivery} options={{ ...headerOptions, headerTitle: () => <Header name="Entrega" />, headerLeft: () => (
+          <View>
+            <HeaderIcon name="chevron-back" />
+          </View>
+        ), }} />
+        {/* customer */}
+        <Stack.Screen name="Index" component={Index} options={{ ...headerOptions, headerTitle: () => <Header name="SWIFTCUT" />, headerLeft: () => (
+          <View>
+            <HeaderIcon name="person" />
+          </View>
+        ), headerRight: () => (
+          <View>
+            <HeaderIconR name="shopping-cart" />
+          </View>
+        ),}} />
+        <Stack.Screen name="ShoppingCart" component={ShoppingCart} options={{ ...headerOptions, headerTitle: () => <Header name="Carrito" />, headerLeft: () => (
           <View>
             <HeaderIcon name="chevron-back" />
           </View>
@@ -70,9 +90,26 @@ const HeaderIcon = (props) => {
   };
 
   return (
-    <TouchableOpacity onPress={props.name === 'chevron-back' ? goBack : redirectToProfile} style={{ marginLeft: 35 }}>
-      <Ionicons name={props.name} size={24} color="#fff" />
-    </TouchableOpacity>
+    <>
+      <TouchableOpacity onPress={props.name === 'chevron-back' ? goBack : redirectToProfile} style={{ marginLeft: 35 }}>
+        <Ionicons name={props.name} size={24} color="#fff" />
+      </TouchableOpacity>
+    </>
+  );
+};
+const HeaderIconR = (props) => {
+  const navigation = useNavigation();
+
+  const redirectToCart = () => {
+    navigation.navigate('ShoppingCart');
+  };
+
+  return (
+    <>
+      <TouchableOpacity onPress={props.name === 'shopping-cart' ? redirectToCart : redirectToCart} style={{ marginRight: 35 }}>
+        <FontAwesome5 name={props.name} size={24} color="#fff" />
+      </TouchableOpacity>
+    </>
   );
 };
 

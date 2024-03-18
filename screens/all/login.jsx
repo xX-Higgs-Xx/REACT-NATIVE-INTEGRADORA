@@ -124,6 +124,8 @@ const Login = () => {
   const handleLogin = () => {
     if (email === 'a' && password === '12345') {
       navigation.replace('Orders');
+    }else if(email === 'b' && password === '12345') {
+      navigation.replace('Index');
     } else {
       alert('Credenciales incorrectas');
     }
