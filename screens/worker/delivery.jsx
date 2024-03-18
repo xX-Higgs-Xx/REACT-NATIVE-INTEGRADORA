@@ -1,20 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Image, StyleSheet, FlatList, TouchableOpacity, Modal, ScrollView, ImageBackground, TextInput, Button } from 'react-native';
 import colors from '../../constants/colors';
+import { useNavigation } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 
 const Delivery = () => {
+    const navigation = useNavigation();
     const [selectedMeat, setSelectedMeat] = useState(null);
     const [totalPrice, setTotalPrice] = useState(0);
     const [commentModalVisible, setCommentModalVisible] = useState(false);
     const [comments, setComments] = useState('');
-
+    const [deliveryStatus, setDeliveryStatus] = useState(''); 
+    
+    const handleCloseModal = () => {
+      setCommentModalVisible(false);
+      setComments('');
+    };
 
     const meats = [
-      { id: '1', name: 'Filete de cerdo', price: 10.99, imageUrl: 'https://ensalpicadas.com/wp-content/uploads/2022/06/Filete-de-Cerdo-Jugoso-5.jpg'},
-      { id: '2', name: 'Costillas de cerdo', price: 8.49, imageUrl: 'https://carnivalmeatlab.com/wp-content/uploads/2021/06/Costillas-de-cerdo-SIN-NOMBRE.jpg'},
-      { id: '3', name: 'Cabeza de cerdo', price: 6.99, imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/5/5d/Cabezadecerdo-04614.jpg'},
-      { id: '4', name: 'Chuletas de cerdo', price: 12.99, imageUrl: 'https://espanol.kingsford.com/wp-content/uploads/2017/02/KFD_CiderBrinedPorkChopswithBrownSugarApplewoodBBQSauce35335_WEB.jpg'},
-      { id: '5', name: 'Carne molida de cerdo', price: 7.99, imageUrl: 'https://carnesrikatas.com/wp-content/uploads/2023/03/molida-de-cerdo-min-convert.io-1.webp'},
+      { id: '1', name: 'Filete de cerdo', price: 10, imageUrl: 'https://ensalpicadas.com/wp-content/uploads/2022/06/Filete-de-Cerdo-Jugoso-5.jpg'},
+      { id: '2', name: 'Costillas de cerdo', price: 10, imageUrl: 'https://carnivalmeatlab.com/wp-content/uploads/2021/06/Costillas-de-cerdo-SIN-NOMBRE.jpg'},
+      { id: '3', name: 'Cabeza de cerdo', price: 10, imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/5/5d/Cabezadecerdo-04614.jpg'},
+      { id: '4', name: 'Chuletas de cerdo', price: 10, imageUrl: 'https://espanol.kingsford.com/wp-content/uploads/2017/02/KFD_CiderBrinedPorkChopswithBrownSugarApplewoodBBQSauce35335_WEB.jpg'},
+      { id: '5', name: 'Carne molida de cerdo', price: 10, imageUrl: 'https://carnesrikatas.com/wp-content/uploads/2023/03/molida-de-cerdo-min-convert.io-1.webp'},
     ];
 
     useEffect(() => {
@@ -43,17 +51,20 @@ const Delivery = () => {
     };
 
     const handleDelivery = () => {
+      setDeliveryStatus('Entregado');
       setCommentModalVisible(true);
-      console.log("Productos entregados:", selectedMeat);
       setSelectedMeat(null);
     };
 
     const handleReject = () => {
+      setDeliveryStatus('Rechazado');
       setCommentModalVisible(true);
     };
 
     const handleSubmitComments = () => {
       console.log('Comentarios enviados:', comments);
+      // Aquí deberías enviar los comentarios junto con el estado de entrega al backend
+      navigation.navigate('Orders'); // Redirigir a la pantalla de pedidos
       setCommentModalVisible(false);
       setComments('');
     };
@@ -103,11 +114,13 @@ const Delivery = () => {
         <Modal visible={commentModalVisible} transparent={true} animationType="fade">
           <View style={styles.modalContainer}>
             <View style={styles.commentModal}>
+              <TouchableOpacity style={styles.closeButton} onPress={handleCloseModal}>
+                <Ionicons name="close-circle" size={24} color={colors.red3} />
+              </TouchableOpacity>
               <Text style={styles.commentTitle}>Comentarios</Text>
               <TextInput
                 style={styles.commentInput}
                 multiline={true}
-                placeholder="Escribe tus comentarios aquí..."
                 value={comments}
                 onChangeText={text => setComments(text)}
               />
@@ -197,7 +210,7 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
-    elevation: 5, // Esto es solo para Android
+    elevation: 5,
   },
   totalPrice: {
     fontSize: 18,
@@ -253,6 +266,11 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 10,
     marginBottom: 10,
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
   },
 });
 
