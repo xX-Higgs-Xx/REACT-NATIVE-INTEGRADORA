@@ -38,41 +38,53 @@ const App = () => {
         <Stack.Screen name="Splash" component={SplashScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
         {/* worker */}
-        <Stack.Screen name="Orders" component={Orders} options={{ ...headerOptions, headerTitle: () => <Header name="Pedidos" />, headerLeft: () => (
-          <View>
-            <HeaderIcon name="person" />
-          </View>
-        ), }} />
-        <Stack.Screen name="Profile" component={Profile} options={{ ...headerOptions, headerTitle: () => <Header name="Perfil" />, headerLeft: () => (
-          <View>
-            <HeaderIcon name="chevron-back" />
-          </View>
-        ), }} />
-        <Stack.Screen name="OrderMaps" component={OrderMaps} options={{ ...headerOptions, headerTitle: () => <Header name="Entrega" />, headerLeft: () => (
-          <View>
-            <HeaderIcon name="chevron-back" />
-          </View>
-        ), }} />
-        <Stack.Screen name="Delivery" component={Delivery} options={{ ...headerOptions, headerTitle: () => <Header name="Entrega" />, headerLeft: () => (
-          <View>
-            <HeaderIcon name="chevron-back" />
-          </View>
-        ), }} />
+        <Stack.Screen name="Orders" component={Orders} options={{
+          ...headerOptions, headerTitle: () => <Header name="Pedidos" />, headerLeft: () => (
+            <View>
+              <HeaderIcon name="person" />
+            </View>
+          ),
+        }} />
+        <Stack.Screen name="Profile" component={Profile} options={{
+          ...headerOptions, headerTitle: () => <Header name="Perfil" />, headerLeft: () => (
+            <View>
+              <HeaderIcon name="chevron-back" />
+            </View>
+          ),
+        }} />
+        <Stack.Screen name="OrderMaps" component={OrderMaps} options={{
+          ...headerOptions, headerTitle: () => <Header name="Entrega" />, headerLeft: () => (
+            <View>
+              <HeaderIcon name="chevron-back" />
+            </View>
+          ),
+        }} />
+        <Stack.Screen name="Delivery" component={Delivery} options={{
+          ...headerOptions, headerTitle: () => <Header name="Entrega" />, headerLeft: () => (
+            <View>
+              <HeaderIcon name="chevron-back" />
+            </View>
+          ),
+        }} />
         {/* customer */}
-        <Stack.Screen name="Index" component={Index} options={{ ...headerOptions, headerTitle: () => <Header name="SWIFTCUT" />, headerLeft: () => (
-          <View>
-            <HeaderIcon name="person" />
-          </View>
-        ), headerRight: () => (
-          <View>
-            <HeaderIconR name="shopping-cart" />
-          </View>
-        ),}} />
-        <Stack.Screen name="ShoppingCart" component={ShoppingCart} options={{ ...headerOptions, headerTitle: () => <Header name="Carrito" />, headerLeft: () => (
-          <View>
-            <HeaderIcon name="chevron-back" />
-          </View>
-        ), }} />
+        <Stack.Screen name="Index" component={Index} options={{
+          ...headerOptions, headerTitle: () => <Header name="SWIFTCUT" />, headerLeft: () => (
+            <View>
+              <HeaderIcon name="person" />
+            </View>
+          ), headerRight: () => (
+            <View>
+              <HeaderIconR name="shopping-cart" />
+            </View>
+          ),
+        }} />
+        <Stack.Screen name="ShoppingCart" component={ShoppingCart} options={{
+          ...headerOptions, headerTitle: () => <Header name="Carrito" />, headerLeft: () => (
+            <View>
+              <HeaderIcon name="chevron-back" />
+            </View>
+          ),
+        }} />
       </Stack.Navigator>
     </NavigationContainer>
   );
