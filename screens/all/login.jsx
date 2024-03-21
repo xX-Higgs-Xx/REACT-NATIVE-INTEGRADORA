@@ -154,7 +154,6 @@ const Login = () => {
           value={password}
           onChangeText={setPassword}
         />
-        <Text style={styles.forPass}>Olvidé mi contraseña</Text>
       </View>
       <View style={styles.footer}>
         <TouchableOpacity style={styles.button} onPress={handleLogin}>

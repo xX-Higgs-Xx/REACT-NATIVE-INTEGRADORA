@@ -17,6 +17,7 @@ import Delivery from './screens/worker/delivery';
 
 import Index from './screens/customer/index';
 import ShoppingCart from './screens/customer/shoppingCart';
+import CategoryP from './screens/customer/categoryP';
 
 const Stack = createStackNavigator();
 
@@ -82,6 +83,18 @@ const App = () => {
           ...headerOptions, headerTitle: () => <Header name="Carrito" />, headerLeft: () => (
             <View>
               <HeaderIcon name="chevron-back" />
+            </View>
+          ),
+        }} />
+        <Stack.Screen name="CategoryP" component={CategoryP} options={{
+          ...headerOptions, headerTitle: () => <Header name="SWIFTCUT" />, headerLeft: () => (
+            <View>
+              <HeaderIcon name="chevron-back" />
+            </View>
+          ),
+          headerRight: () => (
+            <View>
+              <HeaderIconR name="shopping-cart" />
             </View>
           ),
         }} />

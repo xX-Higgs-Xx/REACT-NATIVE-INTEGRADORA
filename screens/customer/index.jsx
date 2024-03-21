@@ -4,7 +4,7 @@ import { FontAwesome6 } from '@expo/vector-icons';
 import { Foundation } from '@expo/vector-icons';
 import colors from '../../constants/colors';
 import Categories from '../../components/categories'; // Asumo que la importación del componente de categorías es correcta
-
+//Como realizar el scrollview sin causar error por el FlatList
 const IndexScreen = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [meats, setMeats] = useState([]);
@@ -50,7 +50,7 @@ const IndexScreen = () => {
         <ImageBackground source={{ uri: imageUrl }} style={[styles.card, style]}>
             <View style={[styles.cardContent, isBestSeller && styles.bestSellerCardContent]}>
                 <View style={styles.textContainer}>
-                    <Text style={styles.name, isBestSeller && styles.bestSellerText}>{name}</Text>
+                    <Text style={[styles.name, isBestSeller && styles.bestSellerText]}>{name}</Text>
                 </View>
                 <TouchableOpacity style={[styles.addButton, isBestSeller && styles.bestSellerButton]}>
                     <FontAwesome6 name="plus" size={18} color="white" />
@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
         borderRadius: 20,
         backgroundColor: colors.white,
         width: "80%",
-        marginBottom: 10,
+        marginVertical: 15,
         shadowColor: '#000',
         shadowOffset: {
             width: 0,
@@ -187,10 +187,6 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: '#fff',
     },
-    price: {
-        fontSize: 16,
-        color: '#fff',
-    },
     addButton: {
         backgroundColor: '#272727',
         borderRadius: 5,
@@ -216,7 +212,7 @@ const styles = StyleSheet.create({
     },
     bestSellerText: {
         fontSize: 30,
-        
+
     }
 });
 
