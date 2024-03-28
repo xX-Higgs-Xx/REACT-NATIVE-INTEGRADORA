@@ -1,36 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TextInput, FlatList, ImageBackground, TouchableOpacity, ScrollView } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { FontAwesome6 } from '@expo/vector-icons';
 import { Foundation } from '@expo/vector-icons';
 import colors from '../../constants/colors';
-import Categories from '../../components/categories'; // Asumo que la importación del componente de categorías es correcta
-//Como realizar el scrollview sin causar error por el FlatList
+import Categories from '../../components/categories';
+
 const IndexScreen = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [meats, setMeats] = useState([]);
     const [filteredMeats, setFilteredMeats] = useState([]);
     const [bestSeller, setBestSeller] = useState(null);
+    const navigation = useNavigation();
 
-    // Simulación de carga de datos
     useEffect(() => {
-        // Aquí podrías cargar los datos de productos desde una API o alguna otra fuente
         const initialMeats = [
-            { id: '1', name: 'Filete de cerdo', price: 10, imageUrl: 'https://ensalpicadas.com/wp-content/uploads/2022/06/Filete-de-Cerdo-Jugoso-5.jpg' },
-            { id: '2', name: 'Costillas de cerdo', price: 10, imageUrl: 'https://carnivalmeatlab.com/wp-content/uploads/2021/06/Costillas-de-cerdo-SIN-NOMBRE.jpg' },
-            { id: '3', name: 'Cabeza de cerdo', price: 10, imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/5/5d/Cabezadecerdo-04614.jpg' },
-            { id: '4', name: 'Chuletas de cerdo', price: 10, imageUrl: 'https://espanol.kingsford.com/wp-content/uploads/2017/02/KFD_CiderBrinedPorkChopswithBrownSugarApplewoodBBQSauce35335_WEB.jpg' },
-            { id: '5', name: 'Carne molida de cerdo', price: 10, imageUrl: 'https://carnesrikatas.com/wp-content/uploads/2023/03/molida-de-cerdo-min-convert.io-1.webp' },
+            { id: '1', name: 'Filete de cerdo', price: 10, imageUrl: 'https://ensalpicadas.com/wp-content/uploads/2022/06/Filete-de-Cerdo-Jugoso-5.jpg', description: 'Delicioso filete de cerdo', },
+            { id: '2', name: 'Costillas de cerdo', price: 10, imageUrl: 'https://carnivalmeatlab.com/wp-content/uploads/2021/06/Costillas-de-cerdo-SIN-NOMBRE.jpg', description: 'Sabrosas costillas de cerdo', },
+            { id: '3', name: 'Cabeza de cerdo', price: 10, imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/5/5d/Cabezadecerdo-04614.jpg', description: 'Cabeza de cerdo fresca', },
+            { id: '4', name: 'Chuletas de cerdo', price: 10, imageUrl: 'https://espanol.kingsford.com/wp-content/uploads/2017/02/KFD_CiderBrinedPorkChopswithBrownSugarApplewoodBBQSauce35335_WEB.jpg', description: 'Jugosas chuletas de cerdo', },
+            { id: '5', name: 'Carne molida de cerdo', price: 10, imageUrl: 'https://carnesrikatas.com/wp-content/uploads/2023/03/molida-de-cerdo-min-convert.io-1.webp', description: 'Carne molida de cerdo de alta calidad', },
         ];
         setMeats(initialMeats);
         setFilteredMeats(initialMeats);
 
-        // Simulación de consulta para el producto más vendido
         const obtenerProductoMasVendido = () => {
-            // Por ahora, simularemos que el producto más vendido es el primer elemento del arreglo de productos
             return initialMeats[0];
         };
 
-        // Obtener el producto más vendido
         const productoMasVendido = obtenerProductoMasVendido();
         setBestSeller(productoMasVendido);
     }, []);
@@ -42,23 +39,28 @@ const IndexScreen = () => {
 
     const handleSearchOnSubmit = () => {
         handleSearch();
-        // Limpia el campo de búsqueda después de presionar Enter
         setSearchQuery('');
     };
 
-    const MeatCard = ({ name, price, imageUrl, style, isBestSeller }) => (
-        <ImageBackground source={{ uri: imageUrl }} style={[styles.card, style]}>
-            <View style={[styles.cardContent, isBestSeller && styles.bestSellerCardContent]}>
-                <View style={styles.textContainer}>
-                    <Text style={[styles.name, isBestSeller && styles.bestSellerText]}>{name}</Text>
+    const MeatCard = ({ id, name, price, imageUrl, description, style, isBestSeller }) => (
+        <TouchableOpacity onPress={() => handleCardPress(id, name, imageUrl, description, price)}>
+            <ImageBackground source={{ uri: imageUrl }} style={[styles.card, style]}>
+                <View style={[styles.cardContent, isBestSeller && styles.bestSellerCardContent]}>
+                    <View style={styles.textContainer}>
+                        <Text style={[styles.name, isBestSeller && styles.bestSellerText]}>{name}</Text>
+                    </View>
+                    <TouchableOpacity style={[styles.addButton, isBestSeller && styles.bestSellerButton]}>
+                        <FontAwesome6 name="plus" size={18} color="white" />
+                        <Text style={styles.addButtonText}>Comprar</Text>
+                    </TouchableOpacity>
                 </View>
-                <TouchableOpacity style={[styles.addButton, isBestSeller && styles.bestSellerButton]}>
-                    <FontAwesome6 name="plus" size={18} color="white" />
-                    <Text style={styles.addButtonText}>Comprar</Text>
-                </TouchableOpacity>
-            </View>
-        </ImageBackground>
+            </ImageBackground>
+        </TouchableOpacity>
     );
+
+    const handleCardPress = (id, name, imageUrl, description, price) => {
+        navigation.navigate('product', { id, name, imageUrl, description, price }); // Pasa todos los datos del producto como parámetros de navegación
+    };
 
     return (
         <ScrollView contentContainerStyle={styles.scrollContainer}>
@@ -69,7 +71,7 @@ const IndexScreen = () => {
                         placeholder="Buscar producto"
                         value={searchQuery}
                         onChangeText={text => setSearchQuery(text)}
-                        onSubmitEditing={handleSearchOnSubmit} // Captura el evento de presionar Enter
+                        onSubmitEditing={handleSearchOnSubmit}
                     />
                     <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
                         <Foundation name="magnifying-glass" size={24} color="black" />
@@ -81,8 +83,11 @@ const IndexScreen = () => {
                 </Text>
                 {bestSeller && (
                     <MeatCard
+                        id={bestSeller.id}
                         name={bestSeller.name}
                         imageUrl={bestSeller.imageUrl}
+                        description={bestSeller.description}
+                        price={bestSeller.price}
                         style={styles.bestSellerCard}
                         isBestSeller={true}
                     />
@@ -94,8 +99,11 @@ const IndexScreen = () => {
                     data={filteredMeats}
                     renderItem={({ item }) => (
                         <MeatCard
+                            id={item.id}
                             name={item.name}
                             imageUrl={item.imageUrl}
+                            description={item.description}
+                            price={item.price}
                             style={styles.recommendedCard}
                         />
                     )}
@@ -164,7 +172,7 @@ const styles = StyleSheet.create({
     },
     bestSellerCard: {
         height: 400,
-        width: "100%",
+        width: "150%",
         borderRadius: 0,
     },
     cardContent: {
@@ -174,7 +182,7 @@ const styles = StyleSheet.create({
         height: '100%',
     },
     bestSellerCardContent: {
-        width: '100%', // Hacer que el contenido de la tarjeta del producto más vendido abarque toda la tarjeta
+        width: '100%',
     },
     textContainer: {
         flex: 1,
@@ -212,7 +220,6 @@ const styles = StyleSheet.create({
     },
     bestSellerText: {
         fontSize: 30,
-
     }
 });
 

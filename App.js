@@ -23,6 +23,7 @@ import SelecciónUbicación from './screens/customer/selecUbi';
 import ProfileCust from './screens/customer/profileCust';
 import Record from './screens/customer/historial';
 import OrderCust from './screens/customer/orderCust';
+import ProductScreen from './screens/all/product';
 
 const Stack = createStackNavigator();
 
@@ -138,6 +139,13 @@ const App = () => {
           headerRight: () => (
             <View>
               <HeaderHome name="home" />
+            </View>
+          ),
+        }} />
+        <Stack.Screen name="product" component={ProductScreen} options={{
+          ...headerOptions, headerTitle: () => <Header name="" />, headerLeft: () => (
+            <View>
+              <HeaderIcon name="chevron-back" />
             </View>
           ),
         }} />
