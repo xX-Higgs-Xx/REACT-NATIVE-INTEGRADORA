@@ -32,24 +32,6 @@ const Delivery = () => {
       }
     }, [meats]);
 
-    const MeatCard = ({ name, price, imageUrl }) => {
-      const handleSelectMeat = (selectedMeat) => {
-        setSelectedMeat(selectedMeat);
-      };
-
-      return (
-        <TouchableOpacity onPress={() => handleSelectMeat({ name, price, imageUrl })}>
-          <View style={styles.card}>
-            <Image source={{ uri: imageUrl }} style={styles.image} />
-            <View style={styles.textContainer}>
-              <Text style={styles.name}>{name}</Text>
-              <Text style={styles.price}>${price}</Text>
-            </View>
-          </View>
-        </TouchableOpacity>
-      );
-    };
-
     const handleDelivery = () => {
       setDeliveryStatus('Entregado');
       setCommentModalVisible(true);
@@ -74,30 +56,18 @@ const Delivery = () => {
         <FlatList
           data={meats}
           renderItem={({ item }) => (
-            <MeatCard
-              name={item.name}
-              price={item.price}
-              imageUrl={item.imageUrl}
-            />
+            <TouchableOpacity>
+              <View style={styles.card}>
+                <Image source={{ uri: item.imageUrl }} style={styles.image} />
+                <View style={styles.textContainer}>
+                  <Text style={styles.name}>{item.name}</Text>
+                  <Text style={styles.price}>${item.price}</Text>
+                </View>
+              </View>
+            </TouchableOpacity>
           )}
           keyExtractor={(item) => item.id}
         />
-
-        <Modal visible={selectedMeat !== null} transparent={true} animationType="fade">
-          <ImageBackground source={{ uri: selectedMeat?.imageUrl }} style={styles.modalBackgroundImage}>
-            <View style={styles.modalContent}>
-              <ScrollView contentContainerStyle={styles.modalScrollView}>
-                <View style={styles.modalDescriptionContainer}>
-                  <Text style={styles.name}>{selectedMeat?.name}</Text>
-                  <Text style={styles.price}>${selectedMeat?.price}</Text>
-                </View>
-              </ScrollView>
-              <TouchableOpacity style={styles.modalCloseButton} onPress={() => setSelectedMeat(null)}>
-                <Text style={styles.modalCloseButtonText}>Cerrar</Text>
-              </TouchableOpacity>
-            </View>
-          </ImageBackground>
-        </Modal>
 
         <View style={styles.footer}>
           <Text style={styles.totalPrice}>Total: ${totalPrice.toFixed(2)}</Text>
@@ -160,42 +130,6 @@ const styles = StyleSheet.create({
   price: {
     fontSize: 16,
     color: 'green',
-  },
-  modalBackgroundImage: {
-    flex: 1,
-    resizeMode: 'cover',
-    justifyContent: 'flex-end',
-  },
-  modalContent: {
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    borderRadius: 20,
-    padding: 20,
-    width: '100%',
-  },
-  modalScrollView: {
-    flexGrow: 1,
-  },
-  modalDescriptionContainer: {
-    backgroundColor: 'transparent',
-    paddingVertical: 10,
-    height: 100,
-    width: '100%',
-    alignItems: 'center',
-  },
-  modalCloseButton: {
-    backgroundColor: '#fff',
-    paddingVertical: 10,
-    width: '100%',
-    alignItems: 'center',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-  },
-  modalCloseButtonText: {
-    fontSize: 16,
-    color: 'black',
-    fontWeight: 'bold',
   },
   footer: {
     flexDirection: 'column',
