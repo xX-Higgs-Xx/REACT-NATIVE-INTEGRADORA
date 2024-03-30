@@ -46,7 +46,7 @@ const ProfileCust = () => {
 
   return (
     <View style={styles.container}>
-      <MaterialIcons name="person" size={180} color="black" marginVertical={50} />
+      <MaterialIcons name="person" size={180} color="black" marginVertical={10} />
       {/* Campo de correo electrónico */}
       <View style={styles.inputContainer}>
         <Text style={styles.label}>Correo electrónico:</Text>

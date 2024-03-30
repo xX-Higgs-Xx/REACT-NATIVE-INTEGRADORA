@@ -13,24 +13,78 @@ const IndexScreen = () => {
     const [bestSeller, setBestSeller] = useState(null);
     const navigation = useNavigation();
 
+    // useEffect(() => {
+    //     fetchMeatsFromAPI(); // Llama a la función para obtener los datos de la API
+    // }, []);
+
+    // const fetchMeatsFromAPI = async () => {
+    //     try {
+    //         const token = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJnZXJzb251cmliZUBnbWFpbC5jb20iLCJyb2xlcyI6W3siYXV0aG9yaXR5IjoiYWRtaW4ifV0sImlhdCI6MTcxMTcyODQxMSwiZXhwIjoxNzEyMzMzMjExfQ.1N0U7Q279Z5EJzqYKzMt2q0d35yz3VCVI0e9DcqJy6E';
+
+    //         const response = await fetch('http://192.168.100.52:8080/api/product/readProducts', {
+    //             headers: {
+    //                 Authorization: `Bearer ${token}`
+    //             }
+    //         });
+    //         const responseData = await response.json();
+
+    //         if (responseData.status === "OK") {
+    //             const data = responseData.data;
+    //             const formattedData = data.map(item => ({
+    //                 id: item.id,
+    //                 name: item.name,
+    //                 description: item.description,
+    //                 imageUrl: item.urlPhoto,
+    //                 quantity: item.quantity
+    //             }));
+    //             setMeats(formattedData);
+    //             setFilteredMeats(formattedData);
+    //             console.log(formattedData);
+
+    //             const productoMasVendido = formattedData[0];
+    //             setBestSeller(productoMasVendido);
+    //         } else {
+    //             console.error('Error en la carga de datos: ', responseData.mensaje);
+    //         }
+    //     } catch (error) {
+    //         console.error('Error en la carga de datos: ', error);
+    //     }
+    // };
+
+
+
+    // Datos simulados en lugar de la llamada a la API
+    const simulatedData = [
+        {
+            id: 1,
+            name: 'Simulated Meat 1',
+            description: 'Simulated Description 1',
+            imageUrl: 'https://ensalpicadas.com/wp-content/uploads/2022/06/Filete-de-Cerdo-Jugoso-5.jpg',
+            quantity: 10
+        },
+        {
+            id: 2,
+            name: 'Simulated Meat 2',
+            description: 'Simulated Description 2',
+            imageUrl: 'https://ensalpicadas.com/wp-content/uploads/2022/06/Filete-de-Cerdo-Jugoso-5.jpg',
+            quantity: 5
+        },
+        // Añade más datos simulados según sea necesario
+    ];
+
+    // Simulación de asignación de datos simulados
     useEffect(() => {
-        const initialMeats = [
-            { id: '1', name: 'Filete de cerdo', price: 10, imageUrl: 'https://ensalpicadas.com/wp-content/uploads/2022/06/Filete-de-Cerdo-Jugoso-5.jpg', description: 'Delicioso filete de cerdo', },
-            { id: '2', name: 'Costillas de cerdo', price: 10, imageUrl: 'https://carnivalmeatlab.com/wp-content/uploads/2021/06/Costillas-de-cerdo-SIN-NOMBRE.jpg', description: 'Sabrosas costillas de cerdo', },
-            { id: '3', name: 'Cabeza de cerdo', price: 10, imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/5/5d/Cabezadecerdo-04614.jpg', description: 'Cabeza de cerdo fresca', },
-            { id: '4', name: 'Chuletas de cerdo', price: 10, imageUrl: 'https://espanol.kingsford.com/wp-content/uploads/2017/02/KFD_CiderBrinedPorkChopswithBrownSugarApplewoodBBQSauce35335_WEB.jpg', description: 'Jugosas chuletas de cerdo', },
-            { id: '5', name: 'Carne molida de cerdo', price: 10, imageUrl: 'https://carnesrikatas.com/wp-content/uploads/2023/03/molida-de-cerdo-min-convert.io-1.webp', description: 'Carne molida de cerdo de alta calidad', },
-        ];
-        setMeats(initialMeats);
-        setFilteredMeats(initialMeats);
-
-        const obtenerProductoMasVendido = () => {
-            return initialMeats[0];
-        };
-
-        const productoMasVendido = obtenerProductoMasVendido();
-        setBestSeller(productoMasVendido);
+        // Establecer los datos simulados
+        setMeats(simulatedData);
+        setFilteredMeats(simulatedData);
+    
+        // Obtener el primer producto como el bestseller
+        const firstProduct = simulatedData[0];
+    
+        // Establecer el bestseller en el estado
+        setBestSeller(firstProduct);
     }, []);
+    
 
     const handleSearch = () => {
         const filtered = meats.filter(meat => meat.name.toLowerCase().includes(searchQuery.toLowerCase()));
@@ -42,7 +96,8 @@ const IndexScreen = () => {
         setSearchQuery('');
     };
 
-    const MeatCard = ({ id, name, price, imageUrl, description, style, isBestSeller }) => (
+    // Dentro de MeatCard, asegúrate de pasar el prop quantity
+    const MeatCard = ({ id, name, price, imageUrl, description, quantity, style, isBestSeller }) => (
         <TouchableOpacity onPress={() => handleCardPress(id, name, imageUrl, description, price)}>
             <ImageBackground source={{ uri: imageUrl }} style={[styles.card, style]}>
                 <View style={[styles.cardContent, isBestSeller && styles.bestSellerCardContent]}>
@@ -59,7 +114,7 @@ const IndexScreen = () => {
     );
 
     const handleCardPress = (id, name, imageUrl, description, price) => {
-        navigation.navigate('product', { id, name, imageUrl, description, price }); // Pasa todos los datos del producto como parámetros de navegación
+        navigation.navigate('product', { id, name, imageUrl, description, price });
     };
 
     return (
@@ -78,9 +133,7 @@ const IndexScreen = () => {
                     </TouchableOpacity>
                 </View>
                 <Categories />
-                <Text style={styles.titulos}>
-                    Más vendido
-                </Text>
+                <Text style={styles.titulos}>Más vendido</Text>
                 {bestSeller && (
                     <MeatCard
                         id={bestSeller.id}
@@ -92,9 +145,7 @@ const IndexScreen = () => {
                         isBestSeller={true}
                     />
                 )}
-                <Text style={styles.titulos}>
-                    Recomendado
-                </Text>
+                <Text style={styles.titulos}>Recomendado</Text>
                 <FlatList
                     data={filteredMeats}
                     renderItem={({ item }) => (
@@ -172,8 +223,9 @@ const styles = StyleSheet.create({
     },
     bestSellerCard: {
         height: 400,
-        width: "150%",
+        width: "120%",
         borderRadius: 0,
+        marginHorizontal: -50
     },
     cardContent: {
         alignItems: 'flex-end',
@@ -188,10 +240,10 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        marginHorizontal: '15%'
+        marginHorizontal: '15%',
     },
     name: {
-        fontSize: 16,
+        fontSize: 25,
         fontWeight: 'bold',
         color: '#fff',
     },
@@ -219,7 +271,7 @@ const styles = StyleSheet.create({
         height: 150,
     },
     bestSellerText: {
-        fontSize: 30,
+        fontSize: 60,
     }
 });
 

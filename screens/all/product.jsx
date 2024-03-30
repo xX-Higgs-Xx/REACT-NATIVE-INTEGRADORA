@@ -6,7 +6,11 @@ const ProductScreen = ({ route }) => {
     const { name, price, imageUrl, description } = route.params;
     const [selectedOption, setSelectedOption] = useState(null);
 
-    const options = ['Opción 1', 'Opción 2', 'Opción 3'];
+    const options = [
+        { name: 'Opción 1', cost: 10, description: 'Descripción de la opción 1' },
+        { name: 'Opción 2', cost: 15, description: 'Descripción de la opción 2' },
+        { name: 'Opción 3', cost: 20, description: 'Descripción de la opción 3' },
+    ];
 
     const handleOptionSelect = (option) => {
         setSelectedOption(option);
@@ -18,20 +22,29 @@ const ProductScreen = ({ route }) => {
                 <Image source={{ uri: imageUrl }} style={styles.image} />
                 <View style={styles.infoContainer}>
                     <Text style={styles.name}>{name}</Text>
-                    <Text style={styles.price}>Precio: ${price}</Text>
                     <Text style={styles.description}>{description}</Text>
                 </View>
-                <View style={styles.divider} />
                 <View style={styles.optionsContainer}>
-                    <Text style={styles.selectLabel}>Selecciona una opción:</Text>
+                    <Text style={styles.selectLabel}>Preparaciones especiales</Text>
                     {options.map((option, index) => (
-                        <TouchableOpacity
-                            key={index}
-                            style={[styles.optionButton, selectedOption === option && styles.selectedOption]}
-                            onPress={() => handleOptionSelect(option)}
-                        >
-                            <Text style={styles.optionText}>{option}</Text>
-                        </TouchableOpacity>
+                        <View style={styles.options} key={index}>
+                            <View style={styles.divider} />
+                            <TouchableOpacity
+                                style={[styles.optionButton, selectedOption === option && styles.selectedOption]}
+                                onPress={() => handleOptionSelect(option)}
+                            >
+                                <View style={styles.radioButton}>
+                                    {selectedOption === option && <View style={styles.radioButtonInner} />}
+                                </View>
+                                <View>
+                                    <View style={styles.titleOptions}>
+                                        <Text style={styles.optionName}>{option.name}</Text>
+                                        <Text style={styles.optionCost}>${option.cost}</Text>
+                                    </View>
+                                    <Text style={styles.optionDescription}>{option.description}</Text>
+                                </View>
+                            </TouchableOpacity>
+                        </View>
                     ))}
                 </View>
             </ScrollView>
@@ -58,7 +71,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'flex-start',
         backgroundColor: '#f1f1f1',
-        paddingBottom: 200, // Ajustado para el espacio del footer y el selector
+        paddingBottom: 150,
     },
     image: {
         width: '100%',
@@ -68,7 +81,7 @@ const styles = StyleSheet.create({
         shadowColor: '#000',
         shadowOffset: {
             width: 0,
-            height: 2,
+            height: -5,
         },
         shadowOpacity: 0.25,
         shadowRadius: 3.84,
@@ -112,35 +125,60 @@ const styles = StyleSheet.create({
         width: '100%',
     },
     optionsContainer: {
-        alignItems: 'center',
+        alignItems: 'left',
         marginTop: 20,
+        width: '70%',
     },
     selectLabel: {
+        textAlign: 'center',
         fontSize: 16,
         fontWeight: 'bold',
         marginBottom: 10,
     },
     optionButton: {
-        backgroundColor: colors.white,
+        flexDirection: 'row',
+        alignItems: 'center',
         borderRadius: 10,
         paddingVertical: 10,
-        paddingHorizontal: 20,
-        marginBottom: 10,
-        borderWidth: 1,
-        borderColor: colors.red3,
     },
     selectedOption: {
         backgroundColor: colors.red3,
     },
-    optionText: {
+    optionName: {
         fontSize: 16,
         fontWeight: 'bold',
         color: colors.black,
+        marginBottom: 5,
+    },
+    optionDescription: {
+        fontSize: 14,
+        color: colors.gray,
+        marginBottom: 5,
+    },
+    optionCost: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: colors.red3,
+    },
+    radioButton: {
+        width: 20,
+        height: 20,
+        borderRadius: 10,
+        borderWidth: 2,
+        borderColor: colors.red3,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 10,
+    },
+    radioButtonInner: {
+        width: 12,
+        height: 12,
+        borderRadius: 6,
+        backgroundColor: colors.red3,
     },
     divider: {
         borderBottomColor: '#ccc',
         borderBottomWidth: 1,
-        width: '80%',
         marginVertical: 20,
     },
     buttonContainer: {
@@ -151,24 +189,31 @@ const styles = StyleSheet.create({
         borderRadius: 50,
         paddingVertical: 10,
         paddingHorizontal: 30,
-        marginHorizontal:20,
+        marginHorizontal: 20,
     },
     plusButton: {
         backgroundColor: colors.white,
         borderRadius: 50,
         paddingVertical: 10,
         paddingHorizontal: 30,
-        marginHorizontal:20,
+        marginHorizontal: 20,
     },
     buyButtonText: {
         color: colors.white,
         fontSize: 16,
         fontWeight: 'bold',
-      },
+    },
     plusButtonText: {
         fontSize: 16,
         fontWeight: 'bold',
-      },
+    },
+    options: {
+        width: '100%',
+    },
+    titleOptions: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+    }
 });
 
 export default ProductScreen;

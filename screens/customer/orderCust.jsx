@@ -2,12 +2,11 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
 const OrderCust = ({ route }) => {
-  const { pedido, detalle } = route.params;
+  const { fecha } = route.params;
 
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Pedido: {pedido}</Text>
-      <Text style={styles.text}>Detalle: {detalle}</Text>
+      <Text style={styles.text}>Pedido del: {fecha}</Text>
     </View>
   );
 };

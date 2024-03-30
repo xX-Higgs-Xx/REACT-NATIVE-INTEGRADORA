@@ -7,23 +7,23 @@ const Record = () => {
 
   // Datos de ejemplo de los pedidos con latitud y longitud
   const ordersData = [
-    { pedido: 1, fecha: '19/12/2024', status: 'Terminado', detalle: 'Pedido 1: Detalles del pedido 1...' }, 
-    { pedido: 2, fecha: '20/12/2024', status: 'Terminado', detalle: 'Pedido 2: Detalles del pedido 2...' }, 
-    { pedido: 3, fecha: '21/12/2024', status: 'Terminado', detalle: 'Pedido 3: Detalles del pedido 3...' }, 
-    { pedido: 4, fecha: '22/12/2024', status: 'Terminado', detalle: 'Pedido 4: Detalles del pedido 4...' }, 
+    { pedido: 1, fecha: '19/12/2024', status: 'Terminado' }, 
+    { pedido: 2, fecha: '20/12/2024', status: 'Terminado' }, 
+    { pedido: 3, fecha: '21/12/2024', status: 'Terminado' }, 
+    { pedido: 4, fecha: '22/12/2024', status: 'Terminado' }, 
   ];
 
   // Filtrar los pedidos con estado "Terminado"
   const ordersInProgress = ordersData.filter(item => item.status === 'Terminado');
 
   // Función para manejar la navegación a la pantalla de pedido con el detalle del pedido
-  const handleOrderPress = (pedido, detalle) => {
-    navigation.navigate('orderCust', { pedido, detalle });
+  const handleOrderPress = (fecha) => {
+    navigation.navigate('orderCust', { fecha });
   };
 
   // Renderizar una tarjeta de pedido
   const renderOrderCard = ({ item }) => (
-    <TouchableOpacity style={styles.card} onPress={() => handleOrderPress(item.pedido, item.detalle)}>
+    <TouchableOpacity style={styles.card} onPress={() => handleOrderPress(item.fecha)}>
       <Text style={styles.text1}>Pedido del:</Text>
       <Text style={styles.text}>{item.fecha}</Text>
     </TouchableOpacity>
