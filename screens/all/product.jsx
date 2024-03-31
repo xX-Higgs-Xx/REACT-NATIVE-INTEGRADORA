@@ -1,19 +1,95 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, TextInput, Alert } from 'react-native';
 import colors from '../../constants/colors';
+import { Entypo } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ProductScreen = ({ route }) => {
-    const { name, price, imageUrl, description } = route.params;
+    const { id, name, price, imageUrl, description } = route.params;
+    const [options, setOptions] = useState([]);
     const [selectedOption, setSelectedOption] = useState(null);
+    const [number, setNumber] = useState('1');
+    const [idCartShop, setIdCartShop] = useState(null);
 
-    const options = [
-        { name: 'Opción 1', cost: 10, description: 'Descripción de la opción 1' },
-        { name: 'Opción 2', cost: 15, description: 'Descripción de la opción 2' },
-        { name: 'Opción 3', cost: 20, description: 'Descripción de la opción 3' },
-    ];
+    useEffect(() => {
+        fetchOptions();
+        getCartId();
+    }, []);
+
+    const fetchOptions = async () => {
+        try {
+            const response = await fetch('http://192.168.137.77:8080/api/extras/readForProduct', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ id: id })
+            });
+            const responseData = await response.json();
+
+            if (responseData.status === "OK") {
+                setOptions(responseData.data);
+            } else {
+                console.error('Error en la carga de opciones: ', responseData.mensaje);
+            }
+        } catch (error) {
+            console.error('Error en la carga de opciones: ', error);
+        }
+    };
+
+    const getCartId = async () => {
+        try {
+            const id = await AsyncStorage.getItem('idCarShop');
+            if (id) {
+                setIdCartShop(id);
+            } else {
+                Alert.alert('Error', 'No se pudo obtener el ID del carrito de la tienda.');
+            }
+        } catch (error) {
+            console.error('Error al obtener el ID del carrito de la tienda: ', error);
+        }
+    };
+
+    const incrementNumber = () => {
+        const newNumber = parseInt(number) + 1;
+        setNumber(newNumber.toString());
+    };
+
+    const decrementNumber = () => {
+        const newNumber = parseInt(number) - 1;
+        if (newNumber >= 1) {
+            setNumber(newNumber.toString());
+        }
+    };
 
     const handleOptionSelect = (option) => {
         setSelectedOption(option);
+    };
+
+    const addToCart = async () => {
+        try {
+            if (selectedOption) {
+                const productToAdd = {
+                    idProductExtra: selectedOption.id,
+                    quantity: parseInt(number),
+                    carId: idCartShop
+                };
+                console.log(productToAdd);
+                const response = await fetch('http://192.168.137.77:8080/api/cardsitems/add', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(productToAdd)
+                });
+                const responseData = await response.json();
+                console.log('Respuesta del servidor:', responseData);
+            } else {
+                alert('Se debe seleccionar una preparación especial.');
+            }
+        } catch (error) {
+            console.error('Error al agregar el producto al carrito: ', error);
+        }
     };
 
     return (
@@ -30,16 +106,16 @@ const ProductScreen = ({ route }) => {
                         <View style={styles.options} key={index}>
                             <View style={styles.divider} />
                             <TouchableOpacity
-                                style={[styles.optionButton, selectedOption === option && styles.selectedOption]}
+                                style={[styles.optionButton, selectedOption === option]}
                                 onPress={() => handleOptionSelect(option)}
                             >
                                 <View style={styles.radioButton}>
-                                    {selectedOption === option && <View style={styles.radioButtonInner} />}
+                                    {selectedOption === option && styles.selectedOption && <View style={styles.radioButtonInner} />}
                                 </View>
-                                <View>
+                                <View style={styles.textContainer}>
                                     <View style={styles.titleOptions}>
                                         <Text style={styles.optionName}>{option.name}</Text>
-                                        <Text style={styles.optionCost}>${option.cost}</Text>
+                                        <Text style={styles.optionCost}>${option.price} x kg</Text>
                                     </View>
                                     <Text style={styles.optionDescription}>{option.description}</Text>
                                 </View>
@@ -49,13 +125,40 @@ const ProductScreen = ({ route }) => {
                 </View>
             </ScrollView>
             <View style={styles.footer}>
-                <View style={styles.buttonContainer}>
-                    <TouchableOpacity style={styles.plusButton} >
-                        <Text style={styles.plusButtonText}>Comprar</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.buyButton} >
-                        <Text style={styles.buyButtonText}>Agregar</Text>
-                    </TouchableOpacity>
+
+                <View style={styles.Buttons}>
+                    <View style={styles.buttonContainer}>
+                        <View style={styles.plusButton}>
+                            <TouchableOpacity onPress={decrementNumber}>
+                                <Entypo name="minus" size={24} color="black" style={styles.plusMinusButon} />
+                            </TouchableOpacity>
+                            <TextInput
+                                style={styles.plusButtonText}
+                                onChangeText={(text) => {
+                                    let newText = '';
+                                    for (let i = 0; i < text.length; i++) {
+                                        if ('0123456789'.includes(text[i])) {
+                                            newText += text[i];
+                                        }
+                                    }
+                                    setNumber(newText);
+                                }}
+                                value={number}
+                                placeholder="1"
+                                keyboardType="numeric"
+                            />
+
+                            <TouchableOpacity onPress={incrementNumber}>
+                                <Entypo name="plus" size={24} color="black" style={styles.plusMinusButon} />
+                            </TouchableOpacity>
+                        </View>
+                        <TouchableOpacity
+                            style={styles.buyButton}
+                            onPress={addToCart}
+                        >
+                            <Text style={styles.buyButtonText}>Agregar</Text>
+                        </TouchableOpacity>
+                    </View>
                 </View>
             </View>
         </View>
@@ -85,7 +188,6 @@ const styles = StyleSheet.create({
         },
         shadowOpacity: 0.25,
         shadowRadius: 3.84,
-        elevation: 5,
     },
     infoContainer: {
         alignItems: 'left',
@@ -97,7 +199,7 @@ const styles = StyleSheet.create({
         marginBottom: 30,
     },
     price: {
-        fontSize: 18,
+        fontSize: 28,
         marginBottom: 10,
     },
     description: {
@@ -107,10 +209,10 @@ const styles = StyleSheet.create({
     footer: {
         position: 'absolute',
         bottom: 0,
-        flexDirection: 'row',
+        flexDirection: 'column',
         justifyContent: 'space-evenly',
         alignItems: 'center',
-        backgroundColor: colors.red4,
+        backgroundColor: '#FFF',
         padding: 20,
         shadowColor: '#000',
         shadowOffset: {
@@ -121,8 +223,10 @@ const styles = StyleSheet.create({
         shadowRadius: 3.84,
         elevation: 5,
         height: 100,
-        borderRadius: 25,
         width: '100%',
+    },
+    Buttons: {
+        flexDirection: 'row',
     },
     optionsContainer: {
         alignItems: 'left',
@@ -192,18 +296,23 @@ const styles = StyleSheet.create({
         marginHorizontal: 20,
     },
     plusButton: {
+        flexDirection: 'row',
         backgroundColor: colors.white,
         borderRadius: 50,
         paddingVertical: 10,
-        paddingHorizontal: 30,
+        paddingHorizontal: 15,
         marginHorizontal: 20,
+    },
+    plusButtonText: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        paddingHorizontal: 15,
+    },
+    plusMinusButon: {
+        paddingHorizontal: 10,
     },
     buyButtonText: {
         color: colors.white,
-        fontSize: 16,
-        fontWeight: 'bold',
-    },
-    plusButtonText: {
         fontSize: 16,
         fontWeight: 'bold',
     },
@@ -213,7 +322,11 @@ const styles = StyleSheet.create({
     titleOptions: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-    }
+        marginBottom: 15,
+    },
+    textContainer: {
+        width: '90%'
+    },
 });
 
 export default ProductScreen;

@@ -5,6 +5,7 @@ import { FontAwesome6 } from '@expo/vector-icons';
 import { Foundation } from '@expo/vector-icons';
 import colors from '../../constants/colors';
 import Categories from '../../components/categories';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const IndexScreen = () => {
     const [searchQuery, setSearchQuery] = useState('');
@@ -13,78 +14,53 @@ const IndexScreen = () => {
     const [bestSeller, setBestSeller] = useState(null);
     const navigation = useNavigation();
 
-    // useEffect(() => {
-    //     fetchMeatsFromAPI(); // Llama a la función para obtener los datos de la API
-    // }, []);
-
-    // const fetchMeatsFromAPI = async () => {
-    //     try {
-    //         const token = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJnZXJzb251cmliZUBnbWFpbC5jb20iLCJyb2xlcyI6W3siYXV0aG9yaXR5IjoiYWRtaW4ifV0sImlhdCI6MTcxMTcyODQxMSwiZXhwIjoxNzEyMzMzMjExfQ.1N0U7Q279Z5EJzqYKzMt2q0d35yz3VCVI0e9DcqJy6E';
-
-    //         const response = await fetch('http://192.168.100.52:8080/api/product/readProducts', {
-    //             headers: {
-    //                 Authorization: `Bearer ${token}`
-    //             }
-    //         });
-    //         const responseData = await response.json();
-
-    //         if (responseData.status === "OK") {
-    //             const data = responseData.data;
-    //             const formattedData = data.map(item => ({
-    //                 id: item.id,
-    //                 name: item.name,
-    //                 description: item.description,
-    //                 imageUrl: item.urlPhoto,
-    //                 quantity: item.quantity
-    //             }));
-    //             setMeats(formattedData);
-    //             setFilteredMeats(formattedData);
-    //             console.log(formattedData);
-
-    //             const productoMasVendido = formattedData[0];
-    //             setBestSeller(productoMasVendido);
-    //         } else {
-    //             console.error('Error en la carga de datos: ', responseData.mensaje);
-    //         }
-    //     } catch (error) {
-    //         console.error('Error en la carga de datos: ', error);
-    //     }
-    // };
-
-
-
-    // Datos simulados en lugar de la llamada a la API
-    const simulatedData = [
-        {
-            id: 1,
-            name: 'Simulated Meat 1',
-            description: 'Simulated Description 1',
-            imageUrl: 'https://ensalpicadas.com/wp-content/uploads/2022/06/Filete-de-Cerdo-Jugoso-5.jpg',
-            quantity: 10
-        },
-        {
-            id: 2,
-            name: 'Simulated Meat 2',
-            description: 'Simulated Description 2',
-            imageUrl: 'https://ensalpicadas.com/wp-content/uploads/2022/06/Filete-de-Cerdo-Jugoso-5.jpg',
-            quantity: 5
-        },
-        // Añade más datos simulados según sea necesario
-    ];
-
-    // Simulación de asignación de datos simulados
     useEffect(() => {
-        // Establecer los datos simulados
-        setMeats(simulatedData);
-        setFilteredMeats(simulatedData);
-    
-        // Obtener el primer producto como el bestseller
-        const firstProduct = simulatedData[0];
-    
-        // Establecer el bestseller en el estado
-        setBestSeller(firstProduct);
+        fetchMeatsFromAPI();
+        retrieveToken();
     }, []);
-    
+
+    const fetchMeatsFromAPI = async () => {
+        try {
+            console.log(await AsyncStorage.getItem('token'));
+            const token = await AsyncStorage.getItem('token');
+
+            const response = await fetch('http://192.168.137.77:8080/api/product/readProducts', {
+                headers: {
+                    Authorization: token
+                }
+            });
+            const responseData = await response.json();
+
+            if (responseData.status === "OK") {
+                const data = responseData.data;
+                const formattedData = data.map(item => ({
+                    id: item.id,
+                    name: item.name,
+                    description: item.description,
+                    imageUrl: item.urlPhoto,
+                    quantity: item.quantity
+                }));
+                setMeats(formattedData);
+                setFilteredMeats(formattedData);
+
+                const productoMasVendido = formattedData[0];
+                setBestSeller(productoMasVendido);
+            } else {
+                console.error('Error en la carga de datos: ', responseData.mensaje);
+            }
+        } catch (error) {
+            console.error('Error en la carga de datos: ', error);
+        }
+    };
+
+    const retrieveToken = async () => {
+        try {
+            const token = await AsyncStorage.getItem('token');
+            console.log('Token recuperado:', token);
+        } catch (error) {
+            console.error('Error al recuperar el token:', error);
+        }
+    };
 
     const handleSearch = () => {
         const filtered = meats.filter(meat => meat.name.toLowerCase().includes(searchQuery.toLowerCase()));
@@ -96,15 +72,38 @@ const IndexScreen = () => {
         setSearchQuery('');
     };
 
-    // Dentro de MeatCard, asegúrate de pasar el prop quantity
-    const MeatCard = ({ id, name, price, imageUrl, description, quantity, style, isBestSeller }) => (
-        <TouchableOpacity onPress={() => handleCardPress(id, name, imageUrl, description, price)}>
+    const MeatCard = ({ id, name, imageUrl, description, quantity, style, isBestSeller }) => (
+        <TouchableOpacity onPress={() => handleCardPress(id, name, imageUrl, description)}>
             <ImageBackground source={{ uri: imageUrl }} style={[styles.card, style]}>
                 <View style={[styles.cardContent, isBestSeller && styles.bestSellerCardContent]}>
                     <View style={styles.textContainer}>
                         <Text style={[styles.name, isBestSeller && styles.bestSellerText]}>{name}</Text>
                     </View>
-                    <TouchableOpacity style={[styles.addButton, isBestSeller && styles.bestSellerButton]}>
+                    <TouchableOpacity
+                        style={[styles.addButton, isBestSeller && styles.bestSellerButton]}
+                        onPress={() => {
+                            const productToAdd = {
+                                productId: id,
+                                productName: name,
+                                productDescription: description,
+                                productImageUrl: imageUrl,
+                                productQuantity: quantity
+                            };
+                            console.log('Producto a agregar al carrito:', productToAdd);
+                            // Enviar los datos al endpoint '/api/cardsitems/add'
+                            fetch('http://192.168.137.77:8080/api/cardsitems/add', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    Authorization: token
+                                },
+                                body: JSON.stringify(productToAdd)
+                            })
+                            .then(response => response.json())
+                            .then(data => console.log('Respuesta del servidor:', data))
+                            .catch(error => console.error('Error al enviar datos al servidor:', error));
+                        }}
+                    >
                         <FontAwesome6 name="plus" size={18} color="white" />
                         <Text style={styles.addButtonText}>Comprar</Text>
                     </TouchableOpacity>
@@ -113,8 +112,8 @@ const IndexScreen = () => {
         </TouchableOpacity>
     );
 
-    const handleCardPress = (id, name, imageUrl, description, price) => {
-        navigation.navigate('product', { id, name, imageUrl, description, price });
+    const handleCardPress = (id, name, imageUrl, description) => {
+        navigation.navigate('product', { id, name, imageUrl, description });
     };
 
     return (
@@ -140,7 +139,6 @@ const IndexScreen = () => {
                         name={bestSeller.name}
                         imageUrl={bestSeller.imageUrl}
                         description={bestSeller.description}
-                        price={bestSeller.price}
                         style={styles.bestSellerCard}
                         isBestSeller={true}
                     />
@@ -148,18 +146,19 @@ const IndexScreen = () => {
                 <Text style={styles.titulos}>Recomendado</Text>
                 <FlatList
                     data={filteredMeats}
-                    renderItem={({ item }) => (
+                    renderItem={({ item, index }) => (
+                        index !== 0 && // Verifica si el índice es diferente de 0 (el primer elemento)
                         <MeatCard
                             id={item.id}
                             name={item.name}
                             imageUrl={item.imageUrl}
                             description={item.description}
-                            price={item.price}
                             style={styles.recommendedCard}
                         />
                     )}
                     keyExtractor={(item) => item.id}
                 />
+
             </View>
         </ScrollView>
     );
@@ -223,7 +222,7 @@ const styles = StyleSheet.create({
     },
     bestSellerCard: {
         height: 400,
-        width: "120%",
+        width: "130%",
         borderRadius: 0,
         marginHorizontal: -50
     },

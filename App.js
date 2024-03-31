@@ -148,6 +148,11 @@ const App = () => {
               <HeaderIcon name="chevron-back" />
             </View>
           ),
+          headerRight: () => (
+            <View>
+              <HeaderIconR name="shopping-cart" />
+            </View>
+          ),
         }} />
       </Stack.Navigator>
     </NavigationContainer>

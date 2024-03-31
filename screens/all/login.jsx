@@ -124,7 +124,7 @@ const Login = () => {
 
   const handleLogin = async () => {
     try {
-      const response = await fetch('http://192.168.100.52:8080/api/auth/signinClients', {
+      const response = await fetch('http://192.168.137.77:8080/api/auth/signinClients', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -133,12 +133,15 @@ const Login = () => {
       });
 
       const data = await response.json();
+
+      const carShopId = data.data.body.data.carShopBean.id;
       
       if (response.ok) {
         if (data) {
-          await AsyncStorage.setItem('token', data.data);
+          await AsyncStorage.setItem('token', data.data.body.data.token);
+          await AsyncStorage.setItem('idCarShop', carShopId.toString());
         } else {
-          console.error('El token recibido es nulo o no está definido.');
+          console.error('El token recibido es nulo o no está definido.'); 
         }
 
 
