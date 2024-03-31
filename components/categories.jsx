@@ -1,6 +1,7 @@
 import { View, Text, Image, ScrollView, TouchableOpacity } from 'react-native';
 import React from 'react';
 import { useNavigation } from '@react-navigation/native';
+import axios from 'axios';
 
 const items = [
     {
@@ -26,7 +27,14 @@ const items = [
 ];
 
 const Categories = () => {
+
+    const urlCat = 'http://10.186.158.96:8080';
+    
     const navigation = useNavigation();
+
+    axios.get(`${urlCat}/api/category/readAll`).then((response) => {
+        console.log('axios: ',response.data);
+    });
 
     const goToCategoryP = (categoryName) => {
         navigation.navigate('CategoryP', { categoryName });

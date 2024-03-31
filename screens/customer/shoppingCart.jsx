@@ -3,99 +3,149 @@ import { View, Text, Image, StyleSheet, FlatList, TouchableOpacity, Modal, Scrol
 import colors from '../../constants/colors';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 
 const ShoppingCart = () => {
-    const navigation = useNavigation();
-    const [selectedMeat, setSelectedMeat] = useState(null);
-    const [totalPrice, setTotalPrice] = useState(0);
-    const [totalPriceEnv, setTotalPriceEnv] = useState(0);
-    const [commentModalVisible, setCommentModalVisible] = useState(false);
-    const [comments, setComments] = useState('');
-    const [deliveryStatus, setDeliveryStatus] = useState('');
+  const navigation = useNavigation();
+  const [selectedMeat, setSelectedMeat] = useState(null);
+  const [totalPrice, setTotalPrice] = useState(0);
+  const [totalPriceEnv, setTotalPriceEnv] = useState(0);
+  const [commentModalVisible, setCommentModalVisible] = useState(false);
+  const [comments, setComments] = useState('');
+  const [deliveryStatus, setDeliveryStatus] = useState('');
+  const [meats, setMeats] = useState([]);
+  
+  useEffect(() => {
+    fetchCartItems();
+  }, []);
 
-    const handleCloseModal = () => {
-        setCommentModalVisible(false);
-        setComments('');
-    };
+  const handleCloseModal = () => {
+    setCommentModalVisible(false);
+    setComments('');
+  };
 
-    const meats = [
-        { id: '1', name: 'Filete de cerdo', price: 10, imageUrl: 'https://ensalpicadas.com/wp-content/uploads/2022/06/Filete-de-Cerdo-Jugoso-5.jpg' },
-        { id: '2', name: 'Costillas de cerdo', price: 10, imageUrl: 'https://carnivalmeatlab.com/wp-content/uploads/2021/06/Costillas-de-cerdo-SIN-NOMBRE.jpg' },
-        { id: '3', name: 'Cabeza de cerdo', price: 10, imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/5/5d/Cabezadecerdo-04614.jpg' },
-        { id: '4', name: 'Chuletas de cerdo', price: 10, imageUrl: 'https://espanol.kingsford.com/wp-content/uploads/2017/02/KFD_CiderBrinedPorkChopswithBrownSugarApplewoodBBQSauce35335_WEB.jpg' },
-        { id: '5', name: 'Carne molida de cerdo', price: 10, imageUrl: 'https://carnesrikatas.com/wp-content/uploads/2023/03/molida-de-cerdo-min-convert.io-1.webp' },
-    ];
 
-    useEffect(() => {
-        if (meats.length > 0) {
-            const total = meats.reduce((acc, meat) => acc + meat.price, 0);
-            setTotalPrice(total);
-            setTotalPriceEnv(total + 35);
-        }
-    }, [meats]);
+  const fetchCartItems = async () => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      const id = await AsyncStorage.getItem('idCarShop');
+      const url = 'http://10.186.158.96:8080/api/cardsitems/readForShop';
+      const response = await fetch('http://10.186.158.96:8080/api/cardsitems/readForShop', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: token,
+        },
+        body: JSON.stringify({ id: id })
+      });
 
-    const handleBuy = () => {
-        navigation.navigate('selecUbi'); // Navegar a la pantalla de selección de ubicación
-    };
+      axios({
+        method: 'post',
+        url: url,
+        data: {id: id}
+      }).then((response) => {
+        console.log('axios: ',response.data.data[0].productExtrasDto);
+        setMeats(response.data.data[0].productExtrasDto);
+      });
+  
+      if (!response.ok) {
+        throw new Error('Error al obtener los datos');
+      }
+  
+      const data = await response.json();
+      //console.log('Respuesta del servidor:', data); // Imprimir la respuesta del servidor en la consola
+      //setMeats(data.data); // Establecer los datos del carrito obtenidos del servidor
+  
+    } catch (error) {
+      console.error('Error al obtener los datos del carrito:', error);
+    }
+  };
+  
+  
 
-    const handleSubmitComments = () => {
-        console.log('Comentarios enviados:', comments);
-        // Aquí deberías enviar los comentarios junto con el estado de entrega al backend
-        navigation.navigate('Orders'); // Redirigir a la pantalla de pedidos
-        setCommentModalVisible(false);
-        setComments('');
-    };
+  useEffect(() => {
+    if (meats.length > 0) {
+      const total = meats.reduce((acc, meat) => acc + meat.quantity * meat.price, 0);
+      setTotalPrice(total);
+      setTotalPriceEnv(total + 35);
+    }
+  }, [meats]);
 
-    return (
-        <View style={styles.container}>
-            <FlatList
-                data={meats}
-                renderItem={({ item }) => (
-                    <TouchableOpacity>
-                        <View style={styles.card}>
-                            <Image source={{ uri: item.imageUrl }} style={styles.image} />
-                            <View style={styles.textContainer}>
-                                <Text style={styles.name}>{item.name}</Text>
-                                <Text style={styles.price}>${item.price}</Text>
-                            </View>
-                        </View>
-                    </TouchableOpacity>
-                )}
-                keyExtractor={(item) => item.id}
-            />
+  const handleBuy = () => {
+    navigation.navigate('selecUbi'); // Navegar a la pantalla de selección de ubicación
+  };
 
-            <View style={styles.footer}>
-                <Text style={styles.totalPrice}>PRODUCTOS:    ${totalPrice.toFixed(2)}</Text>
-                <Text style={styles.totalPrice}>ENVIO:                   $35.00</Text>
-                <View style={styles.divider} />
-                <Text style={styles.totalPrice}>PRODUCTOS:    ${totalPriceEnv.toFixed(2)}</Text>
-                <View style={styles.buttonContainer}>
+  const handleSubmitComments = () => {
+    console.log('Comentarios enviados:', comments);
+    navigation.navigate('Orders'); // Redirigir a la pantalla de pedidos
+    setCommentModalVisible(false);
+    setComments('');
+  };
+
+  return (
+    <View style={styles.container}>
+      <FlatList
+        data={meats}
+        renderItem={({ item }) => (
+          <View key={item.id}>
+            <View style={styles.card}>
+              <Image source={{ uri: item.imageUrl }} style={styles.image} />
+              <View style={styles.textContainer}>
+                <View>
+                  <Text style={styles.name}>{item.productName}</Text>
+                  <Text style={styles.optionName}>{item.optionName}</Text>
+                </View>
+                <View style={styles.priceCount}>
+                  <Text style={styles.optionPrice}>${item.price}</Text>
+                  <View style={styles.quant}>
+                    <Text style={styles.quantity}>Cantidad: {item.quantity}</Text>
                     <TouchableOpacity style={styles.buyButton} onPress={handleBuy}>
-                        <Text style={styles.buyButtonText}>Comprar</Text>
+                      <Text style={styles.buyButtonText}>Editar</Text>
                     </TouchableOpacity>
+                  </View>
                 </View>
+              </View>
             </View>
+            <View style={styles.divider} />
+          </View>
+        )}
+        keyExtractor={(item) => item.id.toString()}
+      />
 
-            <Modal visible={commentModalVisible} transparent={true} animationType="fade">
-                <View style={styles.modalContainer}>
-                    <View style={styles.commentModal}>
-                        <TouchableOpacity style={styles.closeButton} onPress={handleCloseModal}>
-                            <Ionicons name="close-circle" size={24} color={colors.red3} />
-                        </TouchableOpacity>
-                        <Text style={styles.commentTitle}>Comentarios</Text>
-                        <TextInput
-                            style={styles.commentInput}
-                            multiline={true}
-                            value={comments}
-                            onChangeText={text => setComments(text)}
-                        />
-                        <Button title="Enviar" onPress={handleSubmitComments} />
-                    </View>
-                </View>
-            </Modal>
+      <View style={styles.footer}>
+        <Text style={styles.totalPrice}>PRODUCTOS:    ${totalPrice.toFixed(2)}</Text>
+        <Text style={styles.totalPrice}>ENVIO:                   $35.00</Text>
+        <View style={styles.divider} />
+        <Text style={styles.totalPrice}>PRODUCTOS:    ${totalPriceEnv.toFixed(2)}</Text>
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity style={styles.buyButton} onPress={handleBuy}>
+            <Text style={styles.buyButtonText}>Comprar</Text>
+          </TouchableOpacity>
         </View>
-    );
+      </View>
+
+      <Modal visible={commentModalVisible} transparent={true} animationType="fade">
+        <View style={styles.modalContainer}>
+          <View style={styles.commentModal}>
+            <TouchableOpacity style={styles.closeButton} onPress={handleCloseModal}>
+              <Ionicons name="close-circle" size={24} color={colors.red3} />
+            </TouchableOpacity>
+            <Text style={styles.commentTitle}>Comentarios</Text>
+            <TextInput
+              style={styles.commentInput}
+              multiline={true}
+              value={comments}
+              onChangeText={text => setComments(text)}
+            />
+            <Button title="Enviar" onPress={handleSubmitComments} />
+          </View>
+        </View>
+      </Modal>
+    </View>
+  );
 };
+
 
 const styles = StyleSheet.create({
   container: {
@@ -103,20 +153,23 @@ const styles = StyleSheet.create({
     backgroundColor: '#f0f0f0',
   },
   card: {
-    backgroundColor: '#fff',
+    flexDirection: 'row',
+    backgroundColor: '#f1f1f1',
     borderRadius: 20,
     marginBottom: 10,
-    marginTop: 10,
+    marginTop: 20,
     marginHorizontal: 20,
   },
   image: {
-    width: '100%',
-    height: 200,
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
+    width: '40%',
+    height: 120,
+    borderRadius: 10,
   },
   textContainer: {
     padding: 10,
+    width: '100%',
+    justifyContent: "space-around",
+    marginLeft: 10,
   },
   name: {
     fontSize: 16,
@@ -130,7 +183,7 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#fff',
     padding: 30,
     shadowColor: '#000',
     shadowOffset: {
@@ -141,7 +194,7 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
     height: 280,
-    borderRadius:25,
+    borderRadius: 25,
   },
   totalPrice: {
     fontSize: 18,
@@ -209,9 +262,20 @@ const styles = StyleSheet.create({
     width: '100%',
     marginBottom: 20,
   },
-
+  priceCount: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    width: '60%',
+    marginTop: 15,
+  },
+  quant: {
+    alignItems: 'center',
+    justifyContent: 'flex-start' 
+  },
+  quantity: {
+    marginBottom: 10,
+  }
 });
-
-
 
 export default ShoppingCart;

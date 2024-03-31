@@ -5,20 +5,28 @@ import { Entypo } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ProductScreen = ({ route }) => {
-    const { id, name, price, imageUrl, description } = route.params;
+    const { id, name, imageUrl, description, quantity } = route.params;
+    const pricePerKilo = 50; // Precio por kilo definido
+    const price = pricePerKilo; // Precio base
     const [options, setOptions] = useState([]);
     const [selectedOption, setSelectedOption] = useState(null);
     const [number, setNumber] = useState('1');
     const [idCartShop, setIdCartShop] = useState(null);
+    const [totalPrice, setTotalPrice] = useState(price);
+
 
     useEffect(() => {
         fetchOptions();
         getCartId();
     }, []);
 
+    useEffect(() => {
+        calculateTotalPrice();
+    }, [number, selectedOption]);
+
     const fetchOptions = async () => {
         try {
-            const response = await fetch('http://192.168.137.77:8080/api/extras/readForProduct', {
+            const response = await fetch('http://10.186.158.96:8080/api/extras/readForProduct', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -66,16 +74,30 @@ const ProductScreen = ({ route }) => {
         setSelectedOption(option);
     };
 
+    const calculateTotalPrice = () => {
+        let basePrice = price * parseInt(number);
+        let optionPrice = selectedOption ? selectedOption.price * parseInt(number) : 0;
+        setTotalPrice(basePrice + optionPrice);
+    };
+
     const addToCart = async () => {
         try {
+            console.log(quantity);
+            // Verificar si la cantidad deseada excede las existencias disponibles
+            if (quantity && parseInt(number) > quantity) {
+                Alert.alert('Error', 'La cantidad deseada excede las existencias disponibles.');
+                return; // Salir de la función sin agregar al carrito
+            }
+    
             if (selectedOption) {
                 const productToAdd = {
                     idProductExtra: selectedOption.id,
                     quantity: parseInt(number),
                     carId: idCartShop
                 };
+                console.log('cantidad', quantity);
                 console.log(productToAdd);
-                const response = await fetch('http://192.168.137.77:8080/api/cardsitems/add', {
+                const response = await fetch('http://10.186.158.96:8080/api/cardsitems/add', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -91,6 +113,7 @@ const ProductScreen = ({ route }) => {
             console.error('Error al agregar el producto al carrito: ', error);
         }
     };
+    
 
     return (
         <View style={styles.container}>
@@ -99,6 +122,7 @@ const ProductScreen = ({ route }) => {
                 <View style={styles.infoContainer}>
                     <Text style={styles.name}>{name}</Text>
                     <Text style={styles.description}>{description}</Text>
+                    <Text style={styles.quantity}>En existencia: {quantity}</Text>
                 </View>
                 <View style={styles.optionsContainer}>
                     <Text style={styles.selectLabel}>Preparaciones especiales</Text>
@@ -125,6 +149,11 @@ const ProductScreen = ({ route }) => {
                 </View>
             </ScrollView>
             <View style={styles.footer}>
+                <View>
+                    <Text style={styles.basePrice}>Precio de la carne: ${price * parseInt(number)}</Text>
+                    <Text style={styles.optionPrice}>Precio del extra: ${selectedOption ? selectedOption.price * parseInt(number) : 0}</Text>
+                    <Text style={styles.totalPrice}>Precio total: ${totalPrice ? totalPrice.toFixed(2) : 0}</Text>
+                </View>
 
                 <View style={styles.Buttons}>
                     <View style={styles.buttonContainer}>
@@ -174,7 +203,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'flex-start',
         backgroundColor: '#f1f1f1',
-        paddingBottom: 150,
+        paddingBottom: 200,
     },
     image: {
         width: '100%',
@@ -206,6 +235,11 @@ const styles = StyleSheet.create({
         fontSize: 16,
         textAlign: 'left',
     },
+    quantity: {
+        fontSize: 12,
+        marginTop: 15,
+        color: colors.red3,
+    },
     footer: {
         position: 'absolute',
         bottom: 0,
@@ -213,7 +247,7 @@ const styles = StyleSheet.create({
         justifyContent: 'space-evenly',
         alignItems: 'center',
         backgroundColor: '#FFF',
-        padding: 20,
+        padding: 5,
         shadowColor: '#000',
         shadowOffset: {
             width: 0,
@@ -222,8 +256,9 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.25,
         shadowRadius: 3.84,
         elevation: 5,
-        height: 100,
+        height: 190,
         width: '100%',
+        borderRadius: 25,
     },
     Buttons: {
         flexDirection: 'row',
@@ -326,6 +361,19 @@ const styles = StyleSheet.create({
     },
     textContainer: {
         width: '90%'
+    },
+    totalPrice: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginBottom: 5,
+    },
+    basePrice: {
+        fontSize: 16,
+        marginBottom: 5,
+    },
+    optionPrice: {
+        fontSize: 16,
+        marginBottom: 5,
     },
 });
 

@@ -21,16 +21,15 @@ const IndexScreen = () => {
 
     const fetchMeatsFromAPI = async () => {
         try {
-            console.log(await AsyncStorage.getItem('token'));
             const token = await AsyncStorage.getItem('token');
 
-            const response = await fetch('http://192.168.137.77:8080/api/product/readProducts', {
+            const response = await fetch('http://10.186.158.96:8080/api/product/readProducts', {
                 headers: {
                     Authorization: token
                 }
             });
             const responseData = await response.json();
-
+            
             if (responseData.status === "OK") {
                 const data = responseData.data;
                 const formattedData = data.map(item => ({
@@ -39,11 +38,12 @@ const IndexScreen = () => {
                     description: item.description,
                     imageUrl: item.urlPhoto,
                     quantity: item.quantity
-                }));
+                }));;
                 setMeats(formattedData);
                 setFilteredMeats(formattedData);
 
                 const productoMasVendido = formattedData[0];
+                console.log('cantidad: ', formattedData[0].quantity);
                 setBestSeller(productoMasVendido);
             } else {
                 console.error('Error en la carga de datos: ', responseData.mensaje);
@@ -56,7 +56,6 @@ const IndexScreen = () => {
     const retrieveToken = async () => {
         try {
             const token = await AsyncStorage.getItem('token');
-            console.log('Token recuperado:', token);
         } catch (error) {
             console.error('Error al recuperar el token:', error);
         }
@@ -73,7 +72,7 @@ const IndexScreen = () => {
     };
 
     const MeatCard = ({ id, name, imageUrl, description, quantity, style, isBestSeller }) => (
-        <TouchableOpacity onPress={() => handleCardPress(id, name, imageUrl, description)}>
+        <TouchableOpacity onPress={() => handleCardPress(id, name, imageUrl, description, quantity)}>
             <ImageBackground source={{ uri: imageUrl }} style={[styles.card, style]}>
                 <View style={[styles.cardContent, isBestSeller && styles.bestSellerCardContent]}>
                     <View style={styles.textContainer}>
@@ -90,7 +89,6 @@ const IndexScreen = () => {
                                 productQuantity: quantity
                             };
                             console.log('Producto a agregar al carrito:', productToAdd);
-                            // Enviar los datos al endpoint '/api/cardsitems/add'
                             fetch('http://192.168.137.77:8080/api/cardsitems/add', {
                                 method: 'POST',
                                 headers: {
@@ -100,7 +98,6 @@ const IndexScreen = () => {
                                 body: JSON.stringify(productToAdd)
                             })
                             .then(response => response.json())
-                            .then(data => console.log('Respuesta del servidor:', data))
                             .catch(error => console.error('Error al enviar datos al servidor:', error));
                         }}
                     >
@@ -112,9 +109,10 @@ const IndexScreen = () => {
         </TouchableOpacity>
     );
 
-    const handleCardPress = (id, name, imageUrl, description) => {
-        navigation.navigate('product', { id, name, imageUrl, description });
+    const handleCardPress = (id, name, imageUrl, description, quantity) => {
+        navigation.navigate('product', { id, name, imageUrl, description, quantity });
     };
+    
 
     return (
         <ScrollView contentContainerStyle={styles.scrollContainer}>
@@ -138,6 +136,7 @@ const IndexScreen = () => {
                         id={bestSeller.id}
                         name={bestSeller.name}
                         imageUrl={bestSeller.imageUrl}
+                        quantity={bestSeller.quantity}
                         description={bestSeller.description}
                         style={styles.bestSellerCard}
                         isBestSeller={true}
@@ -151,6 +150,7 @@ const IndexScreen = () => {
                         <MeatCard
                             id={item.id}
                             name={item.name}
+                            quantity={item.quantity}
                             imageUrl={item.imageUrl}
                             description={item.description}
                             style={styles.recommendedCard}

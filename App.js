@@ -31,8 +31,6 @@ const App = () => {
   const headerOptions = {
     headerStyle: {
       height: 110,
-      borderBottomLeftRadius: 50,
-      borderBottomRightRadius: 50,
       backgroundColor: colors.red1,
       elevation: 5,
     }
