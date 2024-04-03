@@ -3,22 +3,31 @@ import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, TextInput,
 import colors from '../../constants/colors';
 import { Entypo } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 
-const ProductScreen = ({ route }) => {
+const ProductScreen = ({ route, navigation }) => {
     const { id, name, imageUrl, description, quantity } = route.params;
-    const pricePerKilo = 50; // Precio por kilo definido
-    const price = pricePerKilo; // Precio base
+    const [carnePrecioFijo, setCarnePrecioFijo] = useState(0);
     const [options, setOptions] = useState([]);
     const [selectedOption, setSelectedOption] = useState(null);
     const [number, setNumber] = useState('1');
     const [idCartShop, setIdCartShop] = useState(null);
-    const [totalPrice, setTotalPrice] = useState(price);
-
+    const [totalPrice, setTotalPrice] = useState(0);
 
     useEffect(() => {
         fetchOptions();
         getCartId();
+        fetchCarnePrecioFijo();
     }, []);
+
+    const fetchCarnePrecioFijo = async () => {
+        try {
+            const response = await axios.get('http://192.168.110.170:8080/api/priceKg/readNow');
+            setCarnePrecioFijo(response.data.data.priceSale);
+        } catch (error) {
+            console.error('Error al obtener el precio fijo de la carne:', error);
+        }
+    };
 
     useEffect(() => {
         calculateTotalPrice();
@@ -26,7 +35,7 @@ const ProductScreen = ({ route }) => {
 
     const fetchOptions = async () => {
         try {
-            const response = await fetch('http://10.186.158.96:8080/api/extras/readForProduct', {
+            const response = await fetch('http://192.168.110.170:8080/api/extras/readForProduct', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -75,29 +84,25 @@ const ProductScreen = ({ route }) => {
     };
 
     const calculateTotalPrice = () => {
-        let basePrice = price * parseInt(number);
+        let basePrice = carnePrecioFijo * parseInt(number);
         let optionPrice = selectedOption ? selectedOption.price * parseInt(number) : 0;
         setTotalPrice(basePrice + optionPrice);
     };
 
     const addToCart = async () => {
         try {
-            console.log(quantity);
-            // Verificar si la cantidad deseada excede las existencias disponibles
             if (quantity && parseInt(number) > quantity) {
                 Alert.alert('Error', 'La cantidad deseada excede las existencias disponibles.');
-                return; // Salir de la función sin agregar al carrito
+                return;
             }
-    
+
             if (selectedOption) {
                 const productToAdd = {
                     idProductExtra: selectedOption.id,
                     quantity: parseInt(number),
                     carId: idCartShop
                 };
-                console.log('cantidad', quantity);
-                console.log(productToAdd);
-                const response = await fetch('http://10.186.158.96:8080/api/cardsitems/add', {
+                const response = await fetch('http://192.168.110.170:8080/api/cardsitems/add', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -106,14 +111,15 @@ const ProductScreen = ({ route }) => {
                 });
                 const responseData = await response.json();
                 console.log('Respuesta del servidor:', responseData);
+                Alert.alert('Éxito', 'El producto se ha agregado al carrito correctamente.');
+                navigation.goBack();
             } else {
-                alert('Se debe seleccionar una preparación especial.');
+                Alert.alert('Error', 'Se debe seleccionar una preparación especial.');
             }
         } catch (error) {
             console.error('Error al agregar el producto al carrito: ', error);
         }
     };
-    
 
     return (
         <View style={styles.container}>
@@ -150,11 +156,10 @@ const ProductScreen = ({ route }) => {
             </ScrollView>
             <View style={styles.footer}>
                 <View>
-                    <Text style={styles.basePrice}>Precio de la carne: ${price * parseInt(number)}</Text>
+                    <Text style={styles.basePrice}>Precio de la carne: ${carnePrecioFijo * parseInt(number)}</Text>
                     <Text style={styles.optionPrice}>Precio del extra: ${selectedOption ? selectedOption.price * parseInt(number) : 0}</Text>
                     <Text style={styles.totalPrice}>Precio total: ${totalPrice ? totalPrice.toFixed(2) : 0}</Text>
                 </View>
-
                 <View style={styles.Buttons}>
                     <View style={styles.buttonContainer}>
                         <View style={styles.plusButton}>
@@ -176,7 +181,6 @@ const ProductScreen = ({ route }) => {
                                 placeholder="1"
                                 keyboardType="numeric"
                             />
-
                             <TouchableOpacity onPress={incrementNumber}>
                                 <Entypo name="plus" size={24} color="black" style={styles.plusMinusButon} />
                             </TouchableOpacity>

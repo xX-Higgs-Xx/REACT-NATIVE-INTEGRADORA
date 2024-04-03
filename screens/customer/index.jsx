@@ -7,6 +7,7 @@ import colors from '../../constants/colors';
 import Categories from '../../components/categories';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+
 const IndexScreen = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [meats, setMeats] = useState([]);
@@ -23,13 +24,13 @@ const IndexScreen = () => {
         try {
             const token = await AsyncStorage.getItem('token');
 
-            const response = await fetch('http://10.186.158.96:8080/api/product/readProducts', {
+            const response = await fetch('http://192.168.110.170:8080/api/product/readProducts', {
                 headers: {
                     Authorization: token
                 }
             });
             const responseData = await response.json();
-            
+
             if (responseData.status === "OK") {
                 const data = responseData.data;
                 const formattedData = data.map(item => ({
@@ -43,7 +44,6 @@ const IndexScreen = () => {
                 setFilteredMeats(formattedData);
 
                 const productoMasVendido = formattedData[0];
-                console.log('cantidad: ', formattedData[0].quantity);
                 setBestSeller(productoMasVendido);
             } else {
                 console.error('Error en la carga de datos: ', responseData.mensaje);
@@ -80,26 +80,7 @@ const IndexScreen = () => {
                     </View>
                     <TouchableOpacity
                         style={[styles.addButton, isBestSeller && styles.bestSellerButton]}
-                        onPress={() => {
-                            const productToAdd = {
-                                productId: id,
-                                productName: name,
-                                productDescription: description,
-                                productImageUrl: imageUrl,
-                                productQuantity: quantity
-                            };
-                            console.log('Producto a agregar al carrito:', productToAdd);
-                            fetch('http://192.168.137.77:8080/api/cardsitems/add', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    Authorization: token
-                                },
-                                body: JSON.stringify(productToAdd)
-                            })
-                            .then(response => response.json())
-                            .catch(error => console.error('Error al enviar datos al servidor:', error));
-                        }}
+                        
                     >
                         <FontAwesome6 name="plus" size={18} color="white" />
                         <Text style={styles.addButtonText}>Comprar</Text>
@@ -112,7 +93,7 @@ const IndexScreen = () => {
     const handleCardPress = (id, name, imageUrl, description, quantity) => {
         navigation.navigate('product', { id, name, imageUrl, description, quantity });
     };
-    
+
 
     return (
         <ScrollView contentContainerStyle={styles.scrollContainer}>
@@ -140,6 +121,7 @@ const IndexScreen = () => {
                         description={bestSeller.description}
                         style={styles.bestSellerCard}
                         isBestSeller={true}
+                        onPress={() => handleCardPress(bestSeller.id, bestSeller.name, bestSeller.imageUrl, bestSeller.description, bestSeller.quantity)}
                     />
                 )}
                 <Text style={styles.titulos}>Recomendado</Text>
@@ -178,7 +160,7 @@ const styles = StyleSheet.create({
         borderRadius: 20,
         backgroundColor: colors.white,
         width: "80%",
-        marginVertical: 15,
+        marginVertical: 25,
         shadowColor: '#000',
         shadowOffset: {
             width: 0,

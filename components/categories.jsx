@@ -1,40 +1,33 @@
 import { View, Text, Image, ScrollView, TouchableOpacity } from 'react-native';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
-
-const items = [
-    {
-        image: { uri: "https://img.freepik.com/fotos-premium/lomo-cerdo-crudo-sal-hierbas_147620-312.jpg" },
-        text: "Lomo y chuleta"
-    },
-    {
-        image: { uri: "https://images.ecestaticos.com/hslsVqyIDWJ0qY3KaWKrkfbPLTw=/44x51:2054x1361/1440x1080/filters:fill(white):format(jpg)/f.elconfidencial.com%2Foriginal%2F86f%2Fc0f%2F5a2%2F86fc0f5a241d3cacb6a1c586ac4d3d96.jpg" },
-        text: "Cortes nobles"
-    },
-    {
-        image: { uri: "https://enriquetomas.com/cdn/shop/articles/diferencia-entre-tocino-y-panceta.jpg?v=1690363223" },
-        text: "Panceta y papada"
-    },
-    {
-        image: { uri: "https://img.freepik.com/fotos-premium/lomo-cerdo-crudo-sal-hierbas_147620-312.jpg" },
-        text: "Lomo y chuleta"
-    },
-    {
-        image: { uri: "https://enriquetomas.com/cdn/shop/articles/diferencia-entre-tocino-y-panceta.jpg?v=1690363223" },
-        text: "Panceta y papada"
-    },
-];
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import colors from '../constants/colors';
 
 const Categories = () => {
-
-    const urlCat = 'http://10.186.158.96:8080';
-    
+    const [categories, setCategories] = useState([]);
     const navigation = useNavigation();
 
-    axios.get(`${urlCat}/api/category/readAll`).then((response) => {
-        console.log('axios: ',response.data);
-    });
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const token = await AsyncStorage.getItem('token');
+                
+                const response = await axios.get('http://192.168.110.170:8080/api/category/readAll', {
+                    timeout: 10000,
+                    headers: {
+                        Authorization: token
+                    }
+                });
+                setCategories(response.data.data);
+            } catch (error) {
+                console.error('Error fetching categories:', error);
+            }
+        };
+
+        fetchData();
+    }, []);
 
     const goToCategoryP = (categoryName) => {
         navigation.navigate('CategoryP', { categoryName });
@@ -42,26 +35,27 @@ const Categories = () => {
 
     return (
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', alignContent: 'center', height: 160 }}>
-                {items.map((item, index) => (
-                    <TouchableOpacity key={index} style={{ marginHorizontal: 15, height: 150 }} onPress={() => goToCategoryP(item.text)}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', alignContent: 'center', height: 150 }}>
+                {Array.isArray(categories) && categories.map((category, index) => (
+                    <TouchableOpacity key={index} style={{ marginHorizontal: 15, height: 110 }} onPress={() => goToCategoryP(category.name)}>
                         <View>
                             <Image
-                                source={item.image}
+                                source={{ uri: category.urlPhoto }}
                                 style={{
-                                    width: 90,
-                                    height: 90,
-                                    marginBottom: 10,
+                                    width: 125,
+                                    height: 60,
+                                    marginBottom: 15,
                                     borderRadius: 20,
                                 }}
                             />
-                            <Text style={{ fontSize: 12, fontWeight: 'bold', textAlign: 'center' }}>{item.text}</Text>
+                            <Text style={{ fontSize: 12, fontWeight: 'bold', textAlign: 'center', color: colors.grey }}>{category.name}</Text>
                         </View>
                     </TouchableOpacity>
                 ))}
             </View>
         </ScrollView>
     );
+    
 };
 
 export default Categories;
