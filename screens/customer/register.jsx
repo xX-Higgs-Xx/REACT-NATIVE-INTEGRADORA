@@ -25,10 +25,11 @@ const Register = () => {
             allowsEditing: true,
             aspect: [4, 3],
             quality: 1,
+            maxFileSize: 5 * 1024 * 1024,
         });
-
         setImage(result.assets[0].uri);
     };
+
 
     const createUser = async () => {
         if (password !== confirmPassword) {
@@ -44,13 +45,14 @@ const Register = () => {
             formData.append('email', email);
             formData.append('password', password);
             formData.append('sex', gender);
-            formData.append('image', { uri: image, name: 'image.jpg', type: 'image/jpeg' });
+            formData.append('image', { uri: image, name: 'perfil.jpg', type: 'image/jpeg' });
 
             const response = await axios.post(`${API_URL}/api/customer/add`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
             });
+            console.log('status del response: ', response.status);
             if (response.status === 200) {
                 navigation.replace('Login');
                 Alert.alert('Usuario creado exitosamente');
@@ -65,7 +67,7 @@ const Register = () => {
 
     return (
         <View style={styles.container}>
-            <ScrollView contentContainerStyle={styles.scrollContainer}>
+            <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
                 <View style={styles.register}>
                     <View style={styles.form}>
                         <View style={{ width: "100%", alignItems: 'center' }}>
@@ -210,11 +212,13 @@ const styles = StyleSheet.create({
         marginStart: 50,
     },
     footer: {
-        bottom: 0,
-        right: 0,
-        marginBottom: -55,
-        marginRight: -40,
+        position: 'absolute',
+        bottom: -55,
+        right: -40,
+        width: '100%',
         alignItems: 'flex-end',
+        justifyContent: 'center',
+        backgroundColor: '#f1f1f1',
     },
 });
 

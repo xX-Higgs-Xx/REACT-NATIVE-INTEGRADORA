@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TextInput, FlatList, ImageBackground, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TextInput, FlatList, ImageBackground, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { FontAwesome6 } from '@expo/vector-icons';
 import { Foundation } from '@expo/vector-icons';
@@ -8,12 +8,12 @@ import Categories from '../../components/categories';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_URL } from '../../constants/config';
 
-
 const IndexScreen = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [meats, setMeats] = useState([]);
     const [filteredMeats, setFilteredMeats] = useState([]);
     const [bestSeller, setBestSeller] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
     const navigation = useNavigation();
 
     useEffect(() => {
@@ -40,12 +40,13 @@ const IndexScreen = () => {
                     description: item.description,
                     imageUrl: item.urlPhoto,
                     quantity: item.quantity
-                }));;
+                }));
                 setMeats(formattedData);
                 setFilteredMeats(formattedData);
 
                 const productoMasVendido = formattedData[0];
                 setBestSeller(productoMasVendido);
+                setIsLoading(false); // Cambia el estado de isLoading a falso cuando se completó la carga de datos
             } else {
                 console.error('Error en la carga de datos: ', responseData.mensaje);
             }
@@ -97,52 +98,58 @@ const IndexScreen = () => {
 
 
     return (
-        <ScrollView contentContainerStyle={styles.scrollContainer}>
-            <View style={styles.container}>
-                <View style={styles.inputContainer}>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Buscar producto"
-                        value={searchQuery}
-                        onChangeText={text => setSearchQuery(text)}
-                        onSubmitEditing={handleSearchOnSubmit}
-                    />
-                    <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
-                        <Foundation name="magnifying-glass" size={24} color="black" />
-                    </TouchableOpacity>
+        <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+            {isLoading ? ( // Muestra un mensaje de carga mientras isLoading sea verdadero
+                <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color={colors.primary} />
+                    <Text style={styles.loadingText}>Cargando datos...</Text>
                 </View>
-                <Categories />
-                <Text style={styles.titulos}>Más vendido</Text>
-                {bestSeller && (
-                    <MeatCard
-                        id={bestSeller.id}
-                        name={bestSeller.name}
-                        imageUrl={bestSeller.imageUrl}
-                        quantity={bestSeller.quantity}
-                        description={bestSeller.description}
-                        style={styles.bestSellerCard}
-                        isBestSeller={true}
-                        onPress={() => handleCardPress(bestSeller.id, bestSeller.name, bestSeller.imageUrl, bestSeller.description, bestSeller.quantity)}
-                    />
-                )}
-                <Text style={styles.titulos}>Recomendado</Text>
-                <FlatList
-                    data={filteredMeats}
-                    renderItem={({ item, index }) => (
-                        index !== 0 && 
+            ) : (
+                <View style={styles.container}>
+                    <View style={styles.inputContainer}>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Buscar producto"
+                            value={searchQuery}
+                            onChangeText={text => setSearchQuery(text)}
+                            onSubmitEditing={handleSearchOnSubmit}
+                        />
+                        <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
+                            <Foundation name="magnifying-glass" size={24} color="black" />
+                        </TouchableOpacity>
+                    </View>
+                    <Categories />
+                    <Text style={styles.titulos}>Más vendido</Text>
+                    {bestSeller && (
                         <MeatCard
-                            id={item.id}
-                            name={item.name}
-                            quantity={item.quantity}
-                            imageUrl={item.imageUrl}
-                            description={item.description}
-                            style={styles.recommendedCard}
+                            id={bestSeller.id}
+                            name={bestSeller.name}
+                            imageUrl={bestSeller.imageUrl}
+                            quantity={bestSeller.quantity}
+                            description={bestSeller.description}
+                            style={styles.bestSellerCard}
+                            isBestSeller={true}
+                            onPress={() => handleCardPress(bestSeller.id, bestSeller.name, bestSeller.imageUrl, bestSeller.description, bestSeller.quantity)}
                         />
                     )}
-                    keyExtractor={(item) => item.id}
-                />
-
-            </View>
+                    <Text style={styles.titulos}>Recomendado</Text>
+                    <FlatList
+                        data={filteredMeats}
+                        renderItem={({ item, index }) => (
+                            index !== 0 &&
+                            <MeatCard
+                                id={item.id}
+                                name={item.name}
+                                quantity={item.quantity}
+                                imageUrl={item.imageUrl}
+                                description={item.description}
+                                style={styles.recommendedCard}
+                            />
+                        )}
+                        keyExtractor={(item) => item.id}
+                    />
+                </View>
+            )}
         </ScrollView>
     );
 };
@@ -253,7 +260,16 @@ const styles = StyleSheet.create({
     },
     bestSellerText: {
         fontSize: 60,
-    }
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    loadingText: {
+        marginTop: 10,
+        fontSize: 18,
+    },
 });
 
 export default IndexScreen;

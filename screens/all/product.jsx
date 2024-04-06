@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, TextInput, Alert } from 'react-native';
+import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, TextInput, Alert, ActivityIndicator } from 'react-native';
 import colors from '../../constants/colors';
 import { Entypo } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -14,12 +14,20 @@ const ProductScreen = ({ route, navigation }) => {
     const [number, setNumber] = useState('1.0');
     const [idCartShop, setIdCartShop] = useState(null);
     const [totalPrice, setTotalPrice] = useState(0);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        fetchOptions();
-        getCartId();
-        fetchCarnePrecioFijo();
+        fetchProductData();
     }, []);
+
+    const fetchProductData = async () => {
+        try {
+            await Promise.all([fetchOptions(), fetchCarnePrecioFijo(), getCartId()]);
+            setIsLoading(false);
+        } catch (error) {
+            console.error('Error al cargar los datos del producto:', error);
+        }
+    };
 
     const fetchCarnePrecioFijo = async () => {
         try {
@@ -29,10 +37,6 @@ const ProductScreen = ({ route, navigation }) => {
             console.error('Error al obtener el precio fijo de la carne:', error);
         }
     };
-
-    useEffect(() => {
-        calculateTotalPrice();
-    }, [number, selectedOption]);
 
     const fetchOptions = async () => {
         try {
@@ -68,6 +72,10 @@ const ProductScreen = ({ route, navigation }) => {
         }
     };
 
+    useEffect(() => {
+        calculateTotalPrice();
+    }, [number, selectedOption]);
+
     const incrementNumber = () => {
         const newNumber = (parseFloat(number) + .5).toFixed(1);
         setNumber(newNumber.toString());
@@ -93,7 +101,7 @@ const ProductScreen = ({ route, navigation }) => {
 
     const addToCart = async () => {
         try {
-            if (quantity && parseFloat(number) > quantity) {
+            if ((quantity && parseFloat(number) > quantity) || quantity == 0) {
                 Alert.alert('Error', 'La cantidad deseada excede las existencias disponibles.');
                 return;
             }
@@ -123,9 +131,18 @@ const ProductScreen = ({ route, navigation }) => {
         }
     };
 
+    if (isLoading) {
+        return (
+            <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color={colors.primary} />
+                <Text style={styles.loadingText}>Cargando datos...</Text>
+            </View>
+        );
+    }
+
     return (
         <View style={styles.container}>
-            <ScrollView contentContainerStyle={styles.scrollContainer}>
+            <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
                 <Image source={{ uri: imageUrl }} style={styles.image} />
                 <View style={styles.infoContainer}>
                     <Text style={styles.name}>{name}</Text>
@@ -377,6 +394,15 @@ const styles = StyleSheet.create({
     optionPrice: {
         fontSize: 16,
         marginBottom: 5,
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    loadingText: {
+        marginTop: 10,
+        fontSize: 18,
     },
 });
 

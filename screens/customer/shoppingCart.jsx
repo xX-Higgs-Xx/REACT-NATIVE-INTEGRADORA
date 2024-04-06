@@ -201,6 +201,7 @@ const ShoppingCart = () => {
           </View>
         )}
         keyExtractor={(item) => item.id.toString()}
+        showsVerticalScrollIndicator={false}
       />
 
       <View style={styles.footer}>
