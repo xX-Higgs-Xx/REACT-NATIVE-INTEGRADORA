@@ -1,94 +1,135 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Button, TextInput, TouchableOpacity } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, Button, TextInput, TouchableOpacity, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage'; // Importa AsyncStorage
+import { API_URL } from '../../constants/config';
 
 const ProfileCust = () => {
   const navigation = useNavigation();
 
-  const handleLogout = () => {
-    navigation.reset({
-      index: 0,
-      routes: [{ name: 'Login' }],
-    });
-  };
-  // Estado para almacenar los datos del usuario y sus cambios
-  const [userData, setUserData] = useState({
-    email: 'a',
-    password: '12345',
-    phoneNumber: '1234567890',
-  });
-
-  // Función para manejar el cambio en el correo electrónico
-  const handleChangeEmail = (text) => {
-    setUserData((prevState) => ({ ...prevState, email: text }));
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.removeItem('token');
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Login' }],
+      });
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error);
+    }
   };
 
-  // Función para manejar el cambio en la contraseña
-  const handleChangePassword = (text) => {
-    setUserData((prevState) => ({ ...prevState, password: text }));
+  const [userData, setUserData] = useState(null);
+  const [name, setName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
+  const [message, setMessage] = useState('');
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const token = await AsyncStorage.getItem('token');
+        const customerId = await AsyncStorage.getItem('customerId');
+        const response = await fetch(`${API_URL}/api/customer/read`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: token,
+          },
+          body: JSON.stringify({ "id": customerId }),
+        });
+        const data = await response.json();
+        console.log('datos profile: ', data);
+        if (data.status === 'OK' && data.data) { // Verificar si 'data.data' no es nulo
+          setUserData(data.data);
+          setName(data.data.personDto.name);
+          setLastName(data.data.personDto.lastName);
+          setPhone(data.data.personDto.phone);
+          setEmail(data.data.email);
+        } else {
+          console.error('Error en la respuesta del servidor:', data.error);
+        }
+      } catch (error) {
+        console.error('Error al obtener los datos del usuario:', error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const handleSaveChanges = async () => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      const customerId = await AsyncStorage.getItem('customerId');
+      const response = await fetch(`${API_URL}/api/customer/update`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: token,
+        },
+        body: JSON.stringify({
+          id: customerId,
+          name,
+          lastName,
+          phone,
+          email,
+        }),
+      });
+      const data = await response.json();
+      console.log('Respuesta del servidor al guardar cambios:', data);
+      setMessage('Datos actualizados exitosamente');
+    } catch (error) {
+      console.error('Error al guardar los cambios:', error);
+    }
   };
 
-  // Función para manejar el cambio en el número de teléfono
-  const handleChangePhoneNumber = (text) => {
-    setUserData((prevState) => ({ ...prevState, phoneNumber: text }));
-  };
-
-  // Función para guardar los cambios en los datos del usuario
-  const handleSaveChanges = () => {
-    // Aquí puedes implementar la lógica para guardar los cambios en la base de datos
-    console.log('Datos actualizados:', userData);
-  };
-
-  const handleHistorialClick = () => {
-    navigation.navigate('record'); // Reemplaza 'history' con el nombre real de tu pantalla de historial
-  };
+  if (!userData) {
+    return (
+      <View style={styles.container}>
+        <Text>Cargando datos del usuario...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
-      <MaterialIcons name="person" size={180} color="black" marginVertical={10} />
-      {/* Campo de correo electrónico */}
+      <Image source={{ uri: userData.personDto.urlPhoto }} style={styles.profileImage} />
       <View style={styles.inputContainer}>
+        <Text style={styles.label}>Nombre:</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Nombre"
+          value={name}
+          onChangeText={setName}
+        />
+        <Text style={styles.label}>Apellido:</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Apellido"
+          value={lastName}
+          onChangeText={setLastName}
+        />
+        <Text style={styles.label}>Teléfono:</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Teléfono"
+          value={phone}
+          onChangeText={setPhone}
+        />
         <Text style={styles.label}>Correo electrónico:</Text>
         <TextInput
           style={styles.input}
           placeholder="Correo electrónico"
-          value={userData.email}
-          onChangeText={handleChangeEmail}
+          value={email}
+          onChangeText={setEmail}
         />
       </View>
-      {/* Campo de contraseña */}
-      <View style={styles.inputContainer}>
-        <Text style={styles.label}>Contraseña:</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Contraseña"
-          secureTextEntry={true}
-          value={userData.password}
-          onChangeText={handleChangePassword}
-        />
-      </View>
-      {/* Campo de número de teléfono */}
-      <View style={styles.inputContainer}>
-        <Text style={styles.label}>Número de teléfono:</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Número de teléfono"
-          keyboardType="numeric"
-          value={userData.phoneNumber}
-          onChangeText={handleChangePhoneNumber}
-        />
-      </View>
-      {/* Botones para guardar los cambios y cerrar sesión en línea */}
       <View style={styles.buttonContainer}>
         <Button title="Guardar cambios" onPress={handleSaveChanges} />
         <Button title="Cerrar sesión" onPress={handleLogout} />
       </View>
-      <View style={styles.footer}>
-        <TouchableOpacity style={styles.button} onPress={handleHistorialClick}>
-          <Text style={styles.buttonText}>Historial</Text>
-        </TouchableOpacity>
-      </View>
+      {message ? <Text style={styles.message}>{message}</Text> : null}
     </View>
   );
 };
@@ -97,13 +138,20 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
+    justifyContent: 'center',
+  },
+  profileImage: {
+    width: 180,
+    height: 180,
+    marginBottom: 20,
+    borderRadius: 90,
   },
   inputContainer: {
     width: '80%',
     marginBottom: 20,
   },
   label: {
-    marginBottom: 5,
+    marginVertical: 15,
     fontSize: 16,
   },
   input: {
@@ -114,32 +162,13 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'space-around',
     width: '90%',
     marginVertical: 20,
   },
-  buttonText: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 30,
-    marginStart: 50,
-  },
-  button: {
-    backgroundColor: '#A62940',
-    padding: 20,
-    borderRadius: 50,
-    height: 130,
-    width: 250,
-    alignItems: 'flex-start',
-  },
-  footer: {
-    position: 'absolute',
-    bottom: -55,
-    right: -40,
-    width: '100%',
-    alignItems: 'flex-end',
-    justifyContent: 'center',
-    backgroundColor: '#f1f1f1',
+  message: {
+    color: 'green',
+    marginTop: 10,
   },
 });
 

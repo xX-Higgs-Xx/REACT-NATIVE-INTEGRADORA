@@ -6,6 +6,7 @@ import { Foundation } from '@expo/vector-icons';
 import colors from '../../constants/colors';
 import Categories from '../../components/categories';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_URL } from '../../constants/config';
 
 
 const IndexScreen = () => {
@@ -24,7 +25,7 @@ const IndexScreen = () => {
         try {
             const token = await AsyncStorage.getItem('token');
 
-            const response = await fetch('http://192.168.110.170:8080/api/product/readProducts', {
+            const response = await fetch(`${API_URL}/api/product/readProducts`, {
                 headers: {
                     Authorization: token
                 }
@@ -80,7 +81,7 @@ const IndexScreen = () => {
                     </View>
                     <TouchableOpacity
                         style={[styles.addButton, isBestSeller && styles.bestSellerButton]}
-                        
+                        onPress={() => handleCardPress(id, name, imageUrl, description, quantity)}
                     >
                         <FontAwesome6 name="plus" size={18} color="white" />
                         <Text style={styles.addButtonText}>Comprar</Text>
@@ -128,7 +129,7 @@ const IndexScreen = () => {
                 <FlatList
                     data={filteredMeats}
                     renderItem={({ item, index }) => (
-                        index !== 0 && // Verifica si el índice es diferente de 0 (el primer elemento)
+                        index !== 0 && 
                         <MeatCard
                             id={item.id}
                             name={item.name}
@@ -204,9 +205,8 @@ const styles = StyleSheet.create({
     },
     bestSellerCard: {
         height: 400,
-        width: "130%",
+        width: "180%",
         borderRadius: 0,
-        marginHorizontal: -50
     },
     cardContent: {
         alignItems: 'flex-end',
@@ -215,7 +215,7 @@ const styles = StyleSheet.create({
         height: '100%',
     },
     bestSellerCardContent: {
-        width: '100%',
+        width: '98%',
     },
     textContainer: {
         flex: 1,

@@ -1,42 +1,59 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, FlatList, Image, ImageBackground } from 'react-native';
-import { ScrollView } from 'react-native-gesture-handler';
-import { Foundation } from '@expo/vector-icons';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TextInput, FlatList, ImageBackground, TouchableOpacity, ScrollView } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { FontAwesome6 } from '@expo/vector-icons';
+import { Foundation } from '@expo/vector-icons';
 import colors from '../../constants/colors';
 import Categories from '../../components/categories';
-//Como realizar el scrollview sin causar error por el FlatList
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_URL } from '../../constants/config';
+
 const CategoryP = ({ route }) => {
     const [searchQuery, setSearchQuery] = useState('');
-    const { categoryName } = route.params;
+    const [products, setProducts] = useState([]);
+    const navigation = useNavigation();
+    const { categoryId, categoryName } = route.params;
 
-    const products = {
-        "Lomo y chuleta": [
-            { id: 1, name: "Lomo de cerdo", imageUrl: 'https://ensalpicadas.com/wp-content/uploads/2022/06/Filete-de-Cerdo-Jugoso-5.jpg' },
-            { id: 2, name: "Chuleta de cerdo", imageUrl: 'https://ensalpicadas.com/wp-content/uploads/2022/06/Filete-de-Cerdo-Jugoso-5.jpg' },
-        ],
-        "Cortes nobles": [
-            { id: 3, name: "Filete de ternera", imageUrl: 'https://carnivalmeatlab.com/wp-content/uploads/2021/06/Costillas-de-cerdo-SIN-NOMBRE.jpg' },
-            { id: 4, name: "Solomillo de cerdo", imageUrl: 'https://carnivalmeatlab.com/wp-content/uploads/2021/06/Costillas-de-cerdo-SIN-NOMBRE.jpg' },
-        ],
-        "Panceta y papada": [
-            { id: 5, name: "Panceta de cerdo", imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/5/5d/Cabezadecerdo-04614.jpg' },
-            { id: 6, name: "Papada de cerdo", imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/5/5d/Cabezadecerdo-04614.jpg' },
-        ],
+    useEffect(() => {
+        fetchProducts();
+    }, [categoryId]);
+
+    const fetchProducts = async () => {
+        try {
+            const token = await AsyncStorage.getItem('token');
+            const response = await fetch(`${API_URL}/api/product/readCategoryClient`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: token
+                },
+                body: JSON.stringify({ "idCategory": categoryId }),
+            });
+            const data = await response.json();
+            setProducts(data.data);
+        } catch (error) {
+            console.error('Error fetching products:', error);
+        }
     };
 
-    const MeatCard = ({ name, imageUrl, style }) => (
-        <ImageBackground source={{ uri: imageUrl }} style={[styles.card, style]}>
-            <View style={styles.cardContent}>
-                <View style={styles.textContainer}>
-                    <Text style={styles.name}>{name}</Text>
+    const handleCardPress = (id, name, imageUrl, description, quantity) => {
+        navigation.navigate('product', { id, name, imageUrl, description, quantity });
+    };
+
+    const MeatCard = ({ id, name, imageUrl, description, quantity }) => (
+        <TouchableOpacity onPress={() => handleCardPress(id, name, imageUrl, description, quantity)}>
+            <ImageBackground source={{ uri: imageUrl }} style={styles.card}>
+                <View style={styles.cardContent}>
+                    <View style={styles.textContainer}>
+                        <Text style={styles.name}>{name}</Text>
+                    </View>
+                    <TouchableOpacity style={styles.addButton} onPress={() => handleCardPress(id, name, imageUrl, description, quantity)}>
+                        <FontAwesome6 name="plus" size={18} color="white" />
+                        <Text style={styles.addButtonText}>Comprar</Text>
+                    </TouchableOpacity>
                 </View>
-                <TouchableOpacity style={styles.addButton}>
-                    <FontAwesome6 name="plus" size={18} color="white" />
-                    <Text style={styles.addButtonText}>Comprar</Text>
-                </TouchableOpacity>
-            </View>
-        </ImageBackground>
+            </ImageBackground>
+        </TouchableOpacity>
     );
 
     return (
@@ -57,12 +74,15 @@ const CategoryP = ({ route }) => {
                 <Text style={styles.categoryTitle}>{categoryName}</Text>
                 <View style={styles.categoryContainer}>
                     <FlatList
-                        data={products[categoryName]}
+                        data={products}
                         keyExtractor={item => item.id.toString()}
                         renderItem={({ item }) => (
                             <MeatCard
+                                id={item.id}
                                 name={item.name}
-                                imageUrl={item.imageUrl}
+                                imageUrl={item.urlPhoto}
+                                description={item.description}
+                                quantity={item.quantity}
                             />
                         )}
                     />
@@ -107,12 +127,8 @@ const styles = StyleSheet.create({
         paddingHorizontal: 10,
     },
     categoryContainer: {
-        width: "95%",
-        marginTop: 10, // Ajusta este valor para controlar el espacio entre las categorías y el contenido
-    },
-    categoryTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
+        width: "85%",
+        marginTop: 10,
     },
     card: {
         borderRadius: 40,
@@ -128,7 +144,7 @@ const styles = StyleSheet.create({
         overflow: 'hidden',
         alignItems: 'flex-end',
         height: 150,
-        width: 350,
+        width: '100%',
     },
     cardContent: {
         alignItems: 'flex-end',
@@ -164,7 +180,10 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         marginLeft: 8,
     },
+    categoryTitle: {
+        fontSize: 25,
+        fontWeight: 'bold',
+    },
 });
-
 
 export default CategoryP;

@@ -4,6 +4,8 @@ import { StyleSheet, Text, View, TextInput, TouchableOpacity } from 'react-nativ
 import Svg, { Circle, Ellipse, G, Path, Defs, ClipPath } from "react-native-svg";
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_URL } from '../../constants/config';
+import colors from '../../constants/colors';
 
 const Login = () => {
   function SvgTop() {
@@ -125,7 +127,7 @@ const Login = () => {
 
   const handleLogin = async () => {
     try {
-      const response = await fetch('http://192.168.110.170:8080/api/auth/signinClients', {
+      const response = await fetch(`${API_URL}/api/auth/signinClients`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -135,14 +137,16 @@ const Login = () => {
 
       const data = await response.json();
 
+      const customerId = data.data.body.data.id;
       const carShopId = data.data.body.data.carShopBean.id;
-      
+
       if (response.ok) {
         if (data) {
           await AsyncStorage.setItem('token', data.data.body.data.token);
           await AsyncStorage.setItem('idCarShop', carShopId.toString());
+          await AsyncStorage.setItem('customerId', customerId.toString());
         } else {
-          console.error('El token recibido es nulo o no está definido.'); 
+          console.error('El token recibido es nulo o no está definido.');
         }
 
 
@@ -180,6 +184,9 @@ const Login = () => {
           onChangeText={setPassword}
         />
       </View>
+      <TouchableOpacity style={styles.buttonRegis} onPress={() => navigation.navigate('Register')}>
+        <Text style={styles.textRegis}>Crear cuenta</Text>
+      </TouchableOpacity>
       <View style={styles.footer}>
         <TouchableOpacity style={styles.button} onPress={handleLogin}>
           <Text style={styles.buttonText}>Login</Text>
@@ -261,6 +268,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#f1f1f1',
   },
+  textRegis: {
+    textAlign: 'left',
+    color: colors.grey,
+    fontSize: 15,
+  },
+  buttonRegis: {
+    fontSize: 15,
+    width: '80%',
+    padding: 25,
+  }
 });
 
 export default Login;

@@ -4,13 +4,14 @@ import colors from '../../constants/colors';
 import { Entypo } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import { API_URL } from '../../constants/config';
 
 const ProductScreen = ({ route, navigation }) => {
     const { id, name, imageUrl, description, quantity } = route.params;
     const [carnePrecioFijo, setCarnePrecioFijo] = useState(0);
     const [options, setOptions] = useState([]);
     const [selectedOption, setSelectedOption] = useState(null);
-    const [number, setNumber] = useState('1');
+    const [number, setNumber] = useState('1.0');
     const [idCartShop, setIdCartShop] = useState(null);
     const [totalPrice, setTotalPrice] = useState(0);
 
@@ -22,7 +23,7 @@ const ProductScreen = ({ route, navigation }) => {
 
     const fetchCarnePrecioFijo = async () => {
         try {
-            const response = await axios.get('http://192.168.110.170:8080/api/priceKg/readNow');
+            const response = await axios.get(`${API_URL}/api/priceKg/readNow`);
             setCarnePrecioFijo(response.data.data.priceSale);
         } catch (error) {
             console.error('Error al obtener el precio fijo de la carne:', error);
@@ -35,7 +36,7 @@ const ProductScreen = ({ route, navigation }) => {
 
     const fetchOptions = async () => {
         try {
-            const response = await fetch('http://192.168.110.170:8080/api/extras/readForProduct', {
+            const response = await fetch(`${API_URL}/api/extras/readForProduct`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -68,30 +69,31 @@ const ProductScreen = ({ route, navigation }) => {
     };
 
     const incrementNumber = () => {
-        const newNumber = parseInt(number) + 1;
+        const newNumber = (parseFloat(number) + .5).toFixed(1);
         setNumber(newNumber.toString());
     };
 
     const decrementNumber = () => {
-        const newNumber = parseInt(number) - 1;
-        if (newNumber >= 1) {
+        const newNumber = (parseFloat(number) - .5).toFixed(1);
+        if (newNumber >= 0) {
             setNumber(newNumber.toString());
         }
     };
+
 
     const handleOptionSelect = (option) => {
         setSelectedOption(option);
     };
 
     const calculateTotalPrice = () => {
-        let basePrice = carnePrecioFijo * parseInt(number);
-        let optionPrice = selectedOption ? selectedOption.price * parseInt(number) : 0;
+        let basePrice = carnePrecioFijo * parseFloat(number);
+        let optionPrice = selectedOption ? selectedOption.price * parseFloat(number) : 0;
         setTotalPrice(basePrice + optionPrice);
     };
 
     const addToCart = async () => {
         try {
-            if (quantity && parseInt(number) > quantity) {
+            if (quantity && parseFloat(number) > quantity) {
                 Alert.alert('Error', 'La cantidad deseada excede las existencias disponibles.');
                 return;
             }
@@ -99,10 +101,10 @@ const ProductScreen = ({ route, navigation }) => {
             if (selectedOption) {
                 const productToAdd = {
                     idProductExtra: selectedOption.id,
-                    quantity: parseInt(number),
+                    quantity: parseFloat(number),
                     carId: idCartShop
                 };
-                const response = await fetch('http://192.168.110.170:8080/api/cardsitems/add', {
+                const response = await fetch(`${API_URL}/api/cardsitems/add`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -110,7 +112,7 @@ const ProductScreen = ({ route, navigation }) => {
                     body: JSON.stringify(productToAdd)
                 });
                 const responseData = await response.json();
-                console.log('Respuesta del servidor:', responseData);
+                console.log('Producto en el carrito: ', responseData);
                 Alert.alert('Éxito', 'El producto se ha agregado al carrito correctamente.');
                 navigation.goBack();
             } else {
@@ -156,8 +158,8 @@ const ProductScreen = ({ route, navigation }) => {
             </ScrollView>
             <View style={styles.footer}>
                 <View>
-                    <Text style={styles.basePrice}>Precio de la carne: ${carnePrecioFijo * parseInt(number)}</Text>
-                    <Text style={styles.optionPrice}>Precio del extra: ${selectedOption ? selectedOption.price * parseInt(number) : 0}</Text>
+                    <Text style={styles.basePrice}>Precio de la carne: ${carnePrecioFijo * parseFloat(number)}</Text>
+                    <Text style={styles.optionPrice}>Precio del extra: ${selectedOption ? selectedOption.price * parseFloat(number) : 0}</Text>
                     <Text style={styles.totalPrice}>Precio total: ${totalPrice ? totalPrice.toFixed(2) : 0}</Text>
                 </View>
                 <View style={styles.Buttons}>
@@ -171,14 +173,11 @@ const ProductScreen = ({ route, navigation }) => {
                                 onChangeText={(text) => {
                                     let newText = '';
                                     for (let i = 0; i < text.length; i++) {
-                                        if ('0123456789'.includes(text[i])) {
-                                            newText += text[i];
-                                        }
+                                        newText += text[i];
                                     }
                                     setNumber(newText);
                                 }}
                                 value={number}
-                                placeholder="1"
                                 keyboardType="numeric"
                             />
                             <TouchableOpacity onPress={incrementNumber}>

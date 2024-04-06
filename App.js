@@ -24,13 +24,14 @@ import ProfileCust from './screens/customer/profileCust';
 import Record from './screens/customer/historial';
 import OrderCust from './screens/customer/orderCust';
 import ProductScreen from './screens/all/product';
+import Register from './screens/customer/register';
 
 const Stack = createStackNavigator();
 
 const App = () => {
   const headerOptions = {
     headerStyle: {
-      height: 110,
+      height: 85,
       backgroundColor: colors.red1,
       elevation: 5,
     }
@@ -42,6 +43,13 @@ const App = () => {
       <Stack.Navigator initialRouteName="Splash">
         <Stack.Screen name="Splash" component={SplashScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="Register" component={Register} options={{
+          ...headerOptions, headerTitle: () => <Header name="Registro" />, headerLeft: () => (
+            <View>
+              <HeaderIcon name="chevron-back" />
+            </View>
+          ),
+        }} />
         {/* worker */}
         <Stack.Screen name="Orders" component={Orders} options={{
           ...headerOptions, headerTitle: () => <Header name="Pedidos" />, headerLeft: () => (
