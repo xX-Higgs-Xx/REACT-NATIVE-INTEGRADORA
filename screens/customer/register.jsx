@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Alert, Button } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import * as ImagePicker from 'expo-image-picker';
 import RNPickerSelect from 'react-native-picker-select';
+import * as ImagePicker from 'expo-image-picker';
 import colors from '../../constants/colors';
 import axios from 'axios';
 import { API_URL } from '../../constants/config';
@@ -19,7 +19,23 @@ const Register = () => {
     const [gender, setGender] = useState('');
     const [image, setImage] = useState(null);
 
+    const pickImage = async () => {
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.All,
+            allowsEditing: true,
+            aspect: [4, 3],
+            quality: 1,
+        });
+
+        setImage(result.assets[0].uri);
+    };
+
     const createUser = async () => {
+        if (password !== confirmPassword) {
+            Alert.alert('Error', 'Las contraseñas no coinciden.');
+            return;
+        }
+
         try {
             const formData = new FormData();
             formData.append('name', name);
@@ -28,15 +44,7 @@ const Register = () => {
             formData.append('email', email);
             formData.append('password', password);
             formData.append('sex', gender);
-            if (image) {
-                const uriParts = image.split('.');
-                const fileType = uriParts[uriParts.length - 1];
-                formData.append('image', {
-                    uri: image,
-                    name: `photo.${fileType}`,
-                    type: `image/${fileType}`,
-                });
-            }
+            formData.append('image', { uri: image, name: 'image.jpg', type: 'image/jpeg' });
 
             const response = await axios.post(`${API_URL}/api/customer/add`, formData, {
                 headers: {
@@ -53,27 +61,19 @@ const Register = () => {
             console.error('Error al crear el usuario:', error);
             Alert.alert('Error', 'Ocurrió un error al crear el usuario. Por favor, inténtalo de nuevo más tarde.');
         }
-    }
-
-    const pickImage = async () => {
-        let result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
-            allowsEditing: true,
-            aspect: [4, 3],
-            quality: 1,
-        });
-        console.log('URI de la imagen seleccionada:', result.uri); // Agregar este console.log
-        if (!result.cancelled) {
-            setImage(result.uri);
-        }
     };
-
 
     return (
         <View style={styles.container}>
             <ScrollView contentContainerStyle={styles.scrollContainer}>
                 <View style={styles.register}>
                     <View style={styles.form}>
+                        <View style={{ width: "100%", alignItems: 'center' }}>
+                            {image && <Image source={{ uri: String(image) }} style={{ width: 200, height: 200, borderRadius: 100 }} />}
+                            <TouchableOpacity onPress={pickImage} style={{ marginVertical: 30 }}>
+                                <Text style={{ color: 'blue' }}>Seleccionar imagen</Text>
+                            </TouchableOpacity>
+                        </View>
                         <Text>Nombre</Text>
                         <TextInput
                             placeholder="Nombre"
@@ -135,8 +135,6 @@ const Register = () => {
                             value={confirmPassword}
                             onChangeText={setConfirmPassword}
                         />
-                        <Button title='Seleccionar foto de perfil' onPress={pickImage} />
-                        {image && <Image source={{ uri: image }} style={styles.profileImage} />}
                     </View>
                 </View>
             </ScrollView>
@@ -147,7 +145,7 @@ const Register = () => {
             </View>
         </View>
     );
-}
+};
 
 const pickerSelectStyles = StyleSheet.create({
     inputIOS: {
@@ -217,18 +215,6 @@ const styles = StyleSheet.create({
         marginBottom: -55,
         marginRight: -40,
         alignItems: 'flex-end',
-    },
-    imageButton: {
-        backgroundColor: '#A62940',
-        padding: 10,
-        borderRadius: 50,
-        marginTop: 10,
-    },
-    profileImage: {
-        width: 100,
-        height: 100,
-        borderRadius: 50,
-        marginTop: 10,
     },
 });
 
