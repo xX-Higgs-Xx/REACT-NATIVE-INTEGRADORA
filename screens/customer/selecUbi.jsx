@@ -76,7 +76,7 @@ const SelecciónUbicación = ({ navigation }) => {
                 });
                 const data = await response.json();
                 console.log('Respuesta del servidor:', data);
-                Alert.alert('Pedido en curso', 'Tu pedido está en camino.');
+                Alert.alert('Pedido en curso', 'Puedes ver tu pedido en el historial.');
                 navigation.navigate('Index');
             } catch (error) {
                 console.error('Error al enviar los datos:', error);

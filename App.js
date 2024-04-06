@@ -177,8 +177,8 @@ const HeaderIconCust = (props) => {
 
   return (
     <>
-      <TouchableOpacity onPress={props.name === 'chevron-back' ? goBack : redirectToProfile} style={{ marginLeft: 35 }}>
-        <Ionicons name={props.name} size={24} color="#fff" />
+      <TouchableOpacity onPress={props.name === 'chevron-back' ? goBack : redirectToProfile}>
+        <Ionicons name={props.name} size={24} color="#fff" style={{ paddingHorizontal: 35 }} />
       </TouchableOpacity>
     </>
   );
@@ -197,8 +197,8 @@ const HeaderIcon = (props) => {
 
   return (
     <>
-      <TouchableOpacity onPress={props.name === 'chevron-back' ? goBack : redirectToProfile} style={{ marginLeft: 35 }}>
-        <Ionicons name={props.name} size={24} color="#fff" />
+      <TouchableOpacity onPress={props.name === 'chevron-back' ? goBack : redirectToProfile} >
+        <Ionicons name={props.name} size={24} color="#fff" style={{ paddingHorizontal: 35 }}/>
       </TouchableOpacity>
     </>
   );
@@ -212,8 +212,8 @@ const HeaderIconR = (props) => {
 
   return (
     <>
-      <TouchableOpacity onPress={props.name === 'shopping-cart' ? redirectToCart : redirectToCart} style={{ marginRight: 35 }}>
-        <FontAwesome5 name={props.name} size={24} color="#fff" />
+      <TouchableOpacity onPress={props.name === 'shopping-cart' ? redirectToCart : redirectToCart} >
+        <FontAwesome5 name={props.name} size={24} color="#fff" style={{ paddingHorizontal: 35 }}/>
       </TouchableOpacity>
     </>
   );
@@ -227,8 +227,8 @@ const HeaderHome = (props) => {
 
   return (
     <>
-      <TouchableOpacity onPress={props.name === 'home' ? redirectHome : redirectHome} style={{ marginRight: 35 }}>
-        <FontAwesome name={props.name} size={36} color="#fff" />
+      <TouchableOpacity onPress={props.name === 'home' ? redirectHome : redirectHome} >
+        <FontAwesome name={props.name} size={36} color="#fff" style={{ paddingHorizontal: 35 }}/>
       </TouchableOpacity>
     </>
   );

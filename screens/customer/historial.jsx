@@ -1,46 +1,118 @@
-import React from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_URL } from '../../constants/config';
+import colors from '../../constants/colors';
 
 const Record = () => {
   const navigation = useNavigation();
+  const [isLoading, setIsLoading] = useState(true);
+  const [ordersData, setOrdersData] = useState([]);
 
-  // Datos de ejemplo de los pedidos con latitud y longitud
-  const ordersData = [
-    { pedido: 1, fecha: '19/12/2024', status: 'Terminado' }, 
-    { pedido: 2, fecha: '20/12/2024', status: 'Terminado' }, 
-    { pedido: 3, fecha: '21/12/2024', status: 'Terminado' }, 
-    { pedido: 4, fecha: '22/12/2024', status: 'Terminado' }, 
-  ];
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const customerId = await AsyncStorage.getItem('customerId');
+        const response = await fetch(`${API_URL}/api/order/readAllForCustomer`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ "idCustomer": customerId }),
+        });
+        const data = await response.json();
+        if (data.status === 'OK') {
+          setOrdersData(data.data);
+        } else {
+          console.error('Error en la respuesta del servidor:', data.error);
+        }
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Error al obtener los datos de los pedidos:', error);
+      }
+    };
 
-  // Filtrar los pedidos con estado "Terminado"
-  const ordersInProgress = ordersData.filter(item => item.status === 'Terminado');
+    fetchData();
+  }, []);
 
-  // Función para manejar la navegación a la pantalla de pedido con el detalle del pedido
-  const handleOrderPress = (fecha) => {
-    navigation.navigate('orderCust', { fecha });
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text style={styles.loadingText}>Cargando datos...</Text>
+      </View>
+    );
+  }
+
+  const handleOrderPress = (id, dateRequest, total) => {
+    navigation.navigate('orderCust', { id, dateRequest, total });
   };
 
-  // Renderizar una tarjeta de pedido
-  const renderOrderCard = ({ item }) => (
-    <TouchableOpacity style={styles.card} onPress={() => handleOrderPress(item.fecha)}>
-      <Text style={styles.text1}>Pedido del:</Text>
-      <Text style={styles.text}>{item.fecha}</Text>
-    </TouchableOpacity>
-  );
+  const renderOrderCard = ({ item }) => {
+    let barColor = 'transparent';
+    let description = '';
+    if (item.statusDto && item.statusDto.type) {
+      switch (item.statusDto.type) {
+        case 'entregado':
+          barColor = "#0e9f6e";
+          description = item.statusDto.description;
+          break;
+        case 'Espera':
+          barColor = "#35343D";
+          description = item.statusDto.description;
+          break;
+        case 'Asignado':
+          barColor = colors.red3;
+          description = item.statusDto.description;
+          break;
+        default:
+          barColor = 'transparent';
+      }
+    }
+
+    return (
+      <TouchableOpacity style={styles.card} onPress={() => handleOrderPress(item.id, item.dateRequest, item.total)}>
+        
+        <View style={styles.priceBar}>
+        <Text style={styles.text1}>Pedido del:</Text>
+        <Text style={styles.text}>{item.dateRequest}</Text>
+        </View>
+        <View style={styles.priceBar}>
+          <Text style={styles.text1}>Total:</Text>
+          <Text style={styles.text}>$ {item.total}.00</Text>
+        </View>
+        <View style={styles.footer}>
+          <View style={[styles.bar, { backgroundColor: barColor }]}>
+            <Text style={styles.description}>{description}</Text>
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <View style={styles.container}>
       <FlatList
-        data={ordersInProgress}
+        data={ordersData}
         renderItem={renderOrderCard}
-        keyExtractor={(item) => item.pedido.toString()}
+        keyExtractor={(item, index) => index.toString()}
+        showsVerticalScrollIndicator={false}
       />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 18,
+  },
   container: {
     flex: 1,
   },
@@ -68,6 +140,27 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 3,
   },
+  footer: {
+    marginTop: 10,
+    alignItems: 'center',
+  },
+  bar: {
+    height: 30,
+    width: '100%',
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  description: {
+    fontSize: 14,
+    color: '#fff',
+  },
+  priceBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginHorizontal: 5,
+  }
 });
 
 export default Record;
