@@ -131,20 +131,19 @@ const IndexScreen = () => {
                         />
                     )}
                     <Text style={styles.titulos}>Recomendado</Text>
-                    <FlatList
-                        data={filteredMeats.slice(1)} // Excluir el primer elemento (más vendido)
-                        renderItem={({ item }) => (
-                            <MeatCard
-                                id={item.id}
-                                name={item.name}
-                                quantity={item.quantity}
-                                imageUrl={item.imageUrl}
-                                description={item.description}
-                                style={styles.recommendedCard}
-                            />
-                        )}
-                        keyExtractor={(item) => item.id}
-                    />
+                    <ScrollView vertical>
+                    {filteredMeats.slice(1).map((item) => (
+                     <MeatCard
+                     key={item.id}
+                     id={item.id}
+                     name={item.name}
+                     quantity={item.quantity}
+                     imageUrl={item.imageUrl}
+                     description={item.description}
+                     style={styles.recommendedCard}
+             />
+          ))}
+        </ScrollView>
                 </View>
             )}
         </ScrollView>
