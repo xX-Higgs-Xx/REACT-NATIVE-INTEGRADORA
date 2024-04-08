@@ -78,19 +78,18 @@ const CategoryP = ({ route }) => {
                     </View>
                 ) : (
                     <View style={styles.categoryContainer}>
-                        <FlatList
-                            data={products}
-                            keyExtractor={item => item.id.toString()}
-                            renderItem={({ item }) => (
-                                <MeatCard
-                                    id={item.id}
-                                    name={item.name}
-                                    imageUrl={item.urlPhoto}
-                                    description={item.description}
-                                    quantity={item.quantity}
-                                />
-                            )}
-                        />
+                        <ScrollView contentContainerStyle={styles.scrollContainer}>
+                        {products.map((item) => (
+                        <MeatCard
+                        key={item.id}
+                        id={item.id}
+                        name={item.name}
+                        imageUrl={item.urlPhoto}
+                        description={item.description}
+                        quantity={item.quantity}
+                    />
+                    ))}
+                        </ScrollView>
                     </View>
                 )}
             </View>
