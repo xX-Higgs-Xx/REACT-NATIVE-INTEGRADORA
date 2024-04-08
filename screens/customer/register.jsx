@@ -30,8 +30,11 @@ const Register = () => {
         setImage(result.assets[0].uri);
     };
 
-
     const createUser = async () => {
+        if (!name || !lastname || !phoneNumber || !email || !password || !confirmPassword || !gender || !image) {
+            Alert.alert('Error', 'Por favor, completa todos los campos.');
+            return;
+        }
         if (password !== confirmPassword) {
             Alert.alert('Error', 'Las contraseñas no coinciden.');
             return;
@@ -177,6 +180,7 @@ const styles = StyleSheet.create({
     scrollContainer: {
         flexGrow: 1,
         paddingTop: 30,
+        paddingBottom: 70,
     },
     register: {
         flex: 1,
@@ -215,7 +219,7 @@ const styles = StyleSheet.create({
         position: 'absolute',
         bottom: -55,
         right: -40,
-        width: '100%',
+        width: '40%',
         alignItems: 'flex-end',
         justifyContent: 'center',
         backgroundColor: '#f1f1f1',

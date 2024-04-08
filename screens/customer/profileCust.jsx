@@ -277,7 +277,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: -55,
     right: -40,
-    width: '100%',
+    width: '40%',
     alignItems: 'flex-end',
     justifyContent: 'center',
     backgroundColor: '#f1f1f1',

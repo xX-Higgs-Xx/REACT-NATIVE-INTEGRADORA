@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TextInput, FlatList, ImageBackground, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TextInput, FlatList, ImageBackground, TouchableOpacity, ScrollView, ActivityIndicator, RefreshControl } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { FontAwesome6 } from '@expo/vector-icons';
 import { Foundation } from '@expo/vector-icons';
@@ -14,6 +14,7 @@ const IndexScreen = () => {
     const [filteredMeats, setFilteredMeats] = useState([]);
     const [bestSeller, setBestSeller] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
     const navigation = useNavigation();
 
     useEffect(() => {
@@ -96,28 +97,25 @@ const IndexScreen = () => {
         navigation.navigate('product', { id, name, imageUrl, description, quantity });
     };
 
+    const onRefresh = async () => {
+        setRefreshing(true);
+        await fetchMeatsFromAPI();
+        setRefreshing(false);
+    };
 
     return (
-        <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
-            {isLoading ? ( // Muestra un mensaje de carga mientras isLoading sea verdadero
+        <ScrollView
+            contentContainerStyle={styles.scrollContainer}
+            showsVerticalScrollIndicator={false}
+            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        >
+            {isLoading ? (
                 <View style={styles.loadingContainer}>
                     <ActivityIndicator size="large" color={colors.primary} />
                     <Text style={styles.loadingText}>Cargando datos...</Text>
                 </View>
             ) : (
                 <View style={styles.container}>
-                    <View style={styles.inputContainer}>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Buscar producto"
-                            value={searchQuery}
-                            onChangeText={text => setSearchQuery(text)}
-                            onSubmitEditing={handleSearchOnSubmit}
-                        />
-                        <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
-                            <Foundation name="magnifying-glass" size={24} color="black" />
-                        </TouchableOpacity>
-                    </View>
                     <Categories />
                     <Text style={styles.titulos}>Más vendido</Text>
                     {bestSeller && (
@@ -134,9 +132,8 @@ const IndexScreen = () => {
                     )}
                     <Text style={styles.titulos}>Recomendado</Text>
                     <FlatList
-                        data={filteredMeats}
-                        renderItem={({ item, index }) => (
-                            index !== 0 &&
+                        data={filteredMeats.slice(1)} // Excluir el primer elemento (más vendido)
+                        renderItem={({ item }) => (
                             <MeatCard
                                 id={item.id}
                                 name={item.name}
@@ -161,33 +158,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         alignItems: 'center',
-    },
-    inputContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        borderRadius: 20,
-        backgroundColor: colors.white,
-        width: "80%",
-        marginVertical: 25,
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 3.84,
-        elevation: 5,
-    },
-    input: {
-        flex: 1,
-        height: 40,
-        paddingLeft: 10,
-        backgroundColor: colors.white,
-        borderRadius: 20,
-        fontWeight: "700",
-    },
-    searchButton: {
-        paddingHorizontal: 10,
+        paddingTop: 40,
     },
     titulos: {
         fontSize: 35,

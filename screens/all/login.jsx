@@ -1,11 +1,13 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert } from 'react-native'; // Importa Alert desde 'react-native'
 import Svg, { Circle, Ellipse, G, Path, Defs, ClipPath } from "react-native-svg";
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_URL } from '../../constants/config';
 import colors from '../../constants/colors';
+import { ActivityIndicator } from 'react-native';
+
 
 const Login = () => {
   function SvgTop() {
@@ -123,9 +125,15 @@ const Login = () => {
   const navigation = useNavigation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
 
   const handleLogin = async () => {
+    if (email.trim() === '' || password.trim() === '') {
+      Alert.alert('Campos Vacíos', 'Por favor, complete todos los campos para iniciar sesión.');
+      return;
+    }
+    setLoading(true); 
     try {
       const response = await fetch(`${API_URL}/api/auth/signinClients`, {
         method: 'POST',
@@ -145,18 +153,18 @@ const Login = () => {
           await AsyncStorage.setItem('token', data.data.body.data.token);
           await AsyncStorage.setItem('idCarShop', carShopId.toString());
           await AsyncStorage.setItem('customerId', customerId.toString());
+          navigation.replace('Index');
         } else {
           console.error('El token recibido es nulo o no está definido.');
         }
-
-
-        navigation.replace('Index');
       } else {
         alert('Credenciales incorrectas');
       }
     } catch (error) {
       console.error('Error en inicio de sesión:', error);
       alert('Ocurrió un error durante el inicio de sesión');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -188,8 +196,12 @@ const Login = () => {
         <Text style={styles.textRegis}>Crear cuenta</Text>
       </TouchableOpacity>
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.button} onPress={handleLogin}>
-          <Text style={styles.buttonText}>Login</Text>
+        <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
+        {loading ? ( 
+            <ActivityIndicator size="small" color="white" style={{marginLeft: 80, marginTop: 10}} />
+          ) : (
+            <Text style={styles.buttonText}>Login</Text>
+          )}
         </TouchableOpacity>
       </View>
       <StatusBar style="auto" />

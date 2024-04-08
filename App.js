@@ -10,11 +10,8 @@ import { FontAwesome } from '@expo/vector-icons';
 
 import SplashScreen from './screens/all/splash';
 import LoginScreen from './screens/all/login';
-import Orders from './screens/worker/orders';
-import Profile from './screens/worker/profile';
-import Header from './screens/worker/header';
-import OrderMaps from './screens/worker/orderMaps';
-import Delivery from './screens/worker/delivery';
+import Header from './screens/all/header';
+import ProductScreen from './screens/all/product';
 
 import Index from './screens/customer/index';
 import ShoppingCart from './screens/customer/shoppingCart';
@@ -23,7 +20,6 @@ import SelecciónUbicación from './screens/customer/selecUbi';
 import ProfileCust from './screens/customer/profileCust';
 import Record from './screens/customer/historial';
 import OrderCust from './screens/customer/orderCust';
-import ProductScreen from './screens/all/product';
 import Register from './screens/customer/register';
 
 const Stack = createStackNavigator();
@@ -50,21 +46,7 @@ const App = () => {
             </View>
           ),
         }} />
-        {/* worker */}
-        <Stack.Screen name="Orders" component={Orders} options={{
-          ...headerOptions, headerTitle: () => <Header name="Pedidos" />, headerLeft: () => (
-            <View>
-              <HeaderIcon name="person" />
-            </View>
-          ),
-        }} />
-        <Stack.Screen name="Profile" component={Profile} options={{
-          ...headerOptions, headerTitle: () => <Header name="Perfil" />, headerLeft: () => (
-            <View>
-              <HeaderIcon name="chevron-back" />
-            </View>
-          ),
-        }} />
+        {/* customer */}
         <Stack.Screen name="ProfileCust" component={ProfileCust} options={{
           ...headerOptions, headerTitle: () => <Header name="Perfil" />, headerLeft: () => (
             <View>
@@ -72,21 +54,6 @@ const App = () => {
             </View>
           ),
         }} />
-        <Stack.Screen name="OrderMaps" component={OrderMaps} options={{
-          ...headerOptions, headerTitle: () => <Header name="Entrega" />, headerLeft: () => (
-            <View>
-              <HeaderIcon name="chevron-back" />
-            </View>
-          ),
-        }} />
-        <Stack.Screen name="Delivery" component={Delivery} options={{
-          ...headerOptions, headerTitle: () => <Header name="Entrega" />, headerLeft: () => (
-            <View>
-              <HeaderIcon name="chevron-back" />
-            </View>
-          ),
-        }} />
-        {/* customer */}
         <Stack.Screen name="Index" component={Index} options={{
           ...headerOptions, headerTitle: () => <Header name="SWIFTCUT" />, headerLeft: () => (
             <View>
@@ -183,7 +150,6 @@ const HeaderIconCust = (props) => {
     </>
   );
 };
-
 const HeaderIcon = (props) => {
   const navigation = useNavigation();
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, RefreshControl, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_URL } from '../../constants/config';
@@ -9,41 +9,42 @@ const Record = () => {
   const navigation = useNavigation();
   const [isLoading, setIsLoading] = useState(true);
   const [ordersData, setOrdersData] = useState([]);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const customerId = await AsyncStorage.getItem('customerId');
-        const response = await fetch(`${API_URL}/api/order/readAllForCustomer`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ "idCustomer": customerId }),
-        });
-        const data = await response.json();
-        if (data.status === 'OK') {
-          setOrdersData(data.data);
-        } else {
-          console.error('Error en la respuesta del servidor:', data.error);
-        }
-        setIsLoading(false);
-      } catch (error) {
-        console.error('Error al obtener los datos de los pedidos:', error);
-      }
-    };
-
     fetchData();
   }, []);
 
-  if (isLoading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={styles.loadingText}>Cargando datos...</Text>
-      </View>
-    );
-  }
+  const fetchData = async () => {
+    try {
+      const customerId = await AsyncStorage.getItem('customerId');
+      const response = await fetch(`${API_URL}/api/order/readAllForCustomer`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ "idCustomer": customerId }),
+      });
+      const data = await response.json();
+      console.log('ordenes', data.data);
+      if (data.status === 'OK') {
+        const sortedData = data.data.sort((a, b) => new Date(b.dateRequest) - new Date(a.dateRequest));
+        setOrdersData(sortedData);
+      } else {
+        console.error('Error en la respuesta del servidor:', data.error);
+      }
+      setIsLoading(false);
+    } catch (error) {
+      console.error('Error al obtener los datos de los pedidos:', error);
+    }
+  };
+  
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchData();
+    setRefreshing(false);
+  };
 
   const handleOrderPress = (id, dateRequest, total) => {
     navigation.navigate('orderCust', { id, dateRequest, total });
@@ -54,16 +55,20 @@ const Record = () => {
     let description = '';
     if (item.statusDto && item.statusDto.type) {
       switch (item.statusDto.type) {
-        case 'entregado':
+        case 'Entregado':
           barColor = "#0e9f6e";
           description = item.statusDto.description;
           break;
         case 'Espera':
-          barColor = "#35343D";
+          barColor = "#FAAF22";
           description = item.statusDto.description;
           break;
         case 'Asignado':
           barColor = colors.red3;
+          description = item.statusDto.description;
+          break;
+        case 'Rechazado':
+          barColor = '#35343D';
           description = item.statusDto.description;
           break;
         default:
@@ -73,14 +78,13 @@ const Record = () => {
 
     return (
       <TouchableOpacity style={styles.card} onPress={() => handleOrderPress(item.id, item.dateRequest, item.total)}>
-        
         <View style={styles.priceBar}>
-        <Text style={styles.text1}>Pedido del:</Text>
-        <Text style={styles.text}>{item.dateRequest}</Text>
+          <Text style={styles.text1}>Pedido del:</Text>
+          <Text style={styles.text}>{item.dateRequest}</Text>
         </View>
         <View style={styles.priceBar}>
           <Text style={styles.text1}>Total:</Text>
-          <Text style={styles.text}>$ {item.total}.00</Text>
+          <Text style={styles.text}>$ {item.total + 35}.00</Text>
         </View>
         <View style={styles.footer}>
           <View style={[styles.bar, { backgroundColor: barColor }]}>
@@ -91,6 +95,15 @@ const Record = () => {
     );
   };
 
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text style={styles.loadingText}>Cargando datos...</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <FlatList
@@ -98,23 +111,22 @@ const Record = () => {
         renderItem={renderOrderCard}
         keyExtractor={(item, index) => index.toString()}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
       />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  loadingText: {
-    marginTop: 10,
-    fontSize: 18,
-  },
-  container: {
-    flex: 1,
   },
   card: {
     backgroundColor: '#fff',

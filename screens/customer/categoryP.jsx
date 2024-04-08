@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TextInput, FlatList, ImageBackground, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, FlatList, ImageBackground, TouchableOpacity, ScrollView, RefreshControl, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { FontAwesome6 } from '@expo/vector-icons';
-import { Foundation } from '@expo/vector-icons';
 import colors from '../../constants/colors';
 import Categories from '../../components/categories';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -11,6 +10,8 @@ import { API_URL } from '../../constants/config';
 const CategoryP = ({ route }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [products, setProducts] = useState([]);
+    const [refreshing, setRefreshing] = useState(false);
+    const [isLoading, setIsLoading] = useState(true); // Inicializar isLoading como true
     const navigation = useNavigation();
     const { categoryId, categoryName } = route.params;
 
@@ -20,6 +21,7 @@ const CategoryP = ({ route }) => {
 
     const fetchProducts = async () => {
         try {
+            setRefreshing(true);
             const token = await AsyncStorage.getItem('token');
             const response = await fetch(`${API_URL}/api/product/readCategoryClient`, {
                 method: 'POST',
@@ -31,8 +33,12 @@ const CategoryP = ({ route }) => {
             });
             const data = await response.json();
             setProducts(data.data);
+            setRefreshing(false);
+            setIsLoading(false); // Cambiar isLoading a false una vez que los datos se hayan cargado
         } catch (error) {
             console.error('Error fetching products:', error);
+            setRefreshing(false);
+            setIsLoading(false); // En caso de error, también cambiar isLoading a false
         }
     };
 
@@ -57,36 +63,36 @@ const CategoryP = ({ route }) => {
     );
 
     return (
-        <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+        <ScrollView
+            contentContainerStyle={styles.scrollContainer}
+            showsVerticalScrollIndicator={false}
+            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={fetchProducts} />}
+        >
             <View style={styles.container}>
-                <View style={styles.inputContainer}>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Buscar producto"
-                        value={searchQuery}
-                        onChangeText={text => setSearchQuery(text)}
-                    />
-                    <TouchableOpacity style={styles.searchButton} onPress={() => console.log("Search button pressed")}>
-                        <Foundation name="magnifying-glass" size={24} color="black" />
-                    </TouchableOpacity>
-                </View>
                 <Categories />
                 <Text style={styles.categoryTitle}>{categoryName}</Text>
-                <View style={styles.categoryContainer}>
-                    <FlatList
-                        data={products}
-                        keyExtractor={item => item.id.toString()}
-                        renderItem={({ item }) => (
-                            <MeatCard
-                                id={item.id}
-                                name={item.name}
-                                imageUrl={item.urlPhoto}
-                                description={item.description}
-                                quantity={item.quantity}
-                            />
-                        )}
-                    />
-                </View>
+                {isLoading ? ( 
+                    <View style={styles.loadingContainer}>
+                        <ActivityIndicator size="large" color={colors.primary} />
+                        <Text style={styles.loadingText}>Cargando datos...</Text>
+                    </View>
+                ) : (
+                    <View style={styles.categoryContainer}>
+                        <FlatList
+                            data={products}
+                            keyExtractor={item => item.id.toString()}
+                            renderItem={({ item }) => (
+                                <MeatCard
+                                    id={item.id}
+                                    name={item.name}
+                                    imageUrl={item.urlPhoto}
+                                    description={item.description}
+                                    quantity={item.quantity}
+                                />
+                            )}
+                        />
+                    </View>
+                )}
             </View>
         </ScrollView>
     );
@@ -98,37 +104,11 @@ const styles = StyleSheet.create({
     },
     container: {
         alignItems: 'center',
-    },
-    inputContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        borderRadius: 20,
-        backgroundColor: colors.white,
-        width: "80%",
-        marginVertical: 15,
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 3.84,
-        elevation: 5,
-    },
-    input: {
-        flex: 1,
-        height: 40,
-        paddingLeft: 10,
-        backgroundColor: colors.white,
-        borderRadius: 20,
-        fontWeight: "700",
-    },
-    searchButton: {
-        paddingHorizontal: 10,
+        paddingTop: 40,
     },
     categoryContainer: {
         width: "85%",
-        marginTop: 10,
+        marginTop: 15,
     },
     card: {
         borderRadius: 40,
@@ -183,6 +163,15 @@ const styles = StyleSheet.create({
     categoryTitle: {
         fontSize: 25,
         fontWeight: 'bold',
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    loadingText: {
+        marginTop: 10,
+        fontSize: 18,
     },
 });
 

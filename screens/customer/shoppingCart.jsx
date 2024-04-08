@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Image, StyleSheet, FlatList, TouchableOpacity, Modal, TextInput, Button } from 'react-native';
+import { View, Text, Image, StyleSheet, FlatList, TouchableOpacity, Modal, TextInput, Button, ActivityIndicator } from 'react-native';
 import colors from '../../constants/colors';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -9,6 +9,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 const ShoppingCart = () => {
   const navigation = useNavigation();
+  const [isLoading, setIsLoading] = useState(true);
   const [totalPrice, setTotalPrice] = useState(0);
   const [totalPriceEnv, setTotalPriceEnv] = useState(0);
   const [meats, setMeats] = useState([]);
@@ -19,21 +20,14 @@ const ShoppingCart = () => {
   const [quantityInput, setQuantityInput] = useState('');
   const [isModalVisible, setIsModalVisible] = useState(false);
 
+  const preEnv = 35; // Precio de envio 
+
   useEffect(() => {
-    fetchCartItems();
+    fetchData();
     fetchCarnePrecioFijo();
   }, []);
 
-  const fetchCarnePrecioFijo = async () => {
-    try {
-      const response = await axios.get(`${API_URL}/api/priceKg/readNow`);
-      setCarnePrecioFijo(response.data.data.priceSale);
-    } catch (error) {
-      console.error('Error al obtener el precio fijo de la carne:', error);
-    }
-  };
-
-  const fetchCartItems = async () => {
+  const fetchData = async () => {
     try {
       const token = await AsyncStorage.getItem('token');
       const id = await AsyncStorage.getItem('idCarShop');
@@ -59,9 +53,18 @@ const ShoppingCart = () => {
           setMeatsExtraName(prevState => ({ ...prevState, [item.id]: { name: extraName } }));
         });
       }
-
+      setIsLoading(false);
     } catch (error) {
       console.error('Error al obtener los datos del carrito:', error);
+    }
+  };
+
+  const fetchCarnePrecioFijo = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/api/priceKg/readNow`);
+      setCarnePrecioFijo(response.data.data.priceSale);
+    } catch (error) {
+      console.error('Error al obtener el precio fijo de la carne:', error);
     }
   };
 
@@ -74,7 +77,7 @@ const ShoppingCart = () => {
         return acc + itemPrice;
       }, 0);
       setTotalPrice(total);
-      setTotalPriceEnv(total + 35);
+      setTotalPriceEnv(total + preEnv);
     }
   }, [meats, carnePrecioFijo]);
 
@@ -122,7 +125,7 @@ const ShoppingCart = () => {
         // Cierra el modal
         setIsModalVisible(false);
         // Vuelve a cargar los artículos del carrito para reflejar los cambios
-        fetchCartItems();
+        fetchData();
       } else {
         console.error('Error al actualizar la cantidad del artículo:', response.data.message);
       }
@@ -158,7 +161,7 @@ const ShoppingCart = () => {
 
       if (response.status === 200) {
         setIsModalVisible(false); // Cierra el modal
-        fetchCartItems(); // Recarga los datos del carrito
+        fetchData(); // Recarga los datos del carrito
       } else {
         console.error('Error al eliminar el artículo:', response.data.message);
       }
@@ -172,6 +175,14 @@ const ShoppingCart = () => {
     setIsModalVisible(false);
   };
 
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text style={styles.loadingText}>Cargando datos...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -254,6 +265,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f0f0f0',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 18,
   },
   card: {
     flexDirection: 'row',

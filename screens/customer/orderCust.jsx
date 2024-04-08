@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Image, ScrollView, ActivityIndicator, ImageBackground } from 'react-native';
 import { API_URL } from '../../constants/config';
+import colors from '../../constants/colors';
 
 const OrderCust = ({ route }) => {
   const { id } = route.params;
@@ -35,7 +36,7 @@ const OrderCust = ({ route }) => {
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0000ff" />
+        <ActivityIndicator size="large" color={colors.primary} />
         <Text style={styles.loadingText}>Cargando pedido...</Text>
       </View>
     );
@@ -74,7 +75,6 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 10,
     fontSize: 18,
-    fontStyle: 'italic',
     color: '#888',
   },
   card: {
