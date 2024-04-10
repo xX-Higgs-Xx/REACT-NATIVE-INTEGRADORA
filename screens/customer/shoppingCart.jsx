@@ -16,8 +16,8 @@ const ShoppingCart = () => {
   const [meatsName, setMeatsName] = useState({});
   const [meatsExtraName, setMeatsExtraName] = useState({});
   const [carnePrecioFijo, setCarnePrecioFijo] = useState(0);
-  const [selectedItem, setSelectedItem] = useState(null);
   const [quantityInput, setQuantityInput] = useState('');
+  const [selectedItem, setSelectedItem] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
 
   const preEnv = 35; // Precio de envio 
@@ -39,7 +39,7 @@ const ShoppingCart = () => {
           Authorization: token,
         }
       });
-
+      console.log('carrito',response.data.data);
       setMeats(response.data.data);
 
       if (response.data.data.length > 0) {
@@ -119,7 +119,6 @@ const ShoppingCart = () => {
       });
 
       console.log(`actualizacion: `, response);
-      // Verifica si la solicitud fue exitosa
       if (response.status === 200) {
         // Actualiza los datos locales (si es necesario)
         // Cierra el modal

@@ -4,18 +4,21 @@ import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_URL } from '../../constants/config';
 import colors from '../../constants/colors';
-import * as ImagePicker from 'expo-image-picker'; // Importar ImagePicker desde Expo
+import * as ImagePicker from 'expo-image-picker';
 
 const ProfileCust = () => {
   const navigation = useNavigation();
   const [isLoading, setIsLoading] = useState(true);
-  const [image, setImage] = useState(null); // Estado para almacenar la imagen
+  const [image, setImage] = useState(null);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [originalData, setOriginalData] = useState(null);
 
   const handleLogout = async () => {
     try {
       await AsyncStorage.removeItem('token');
+      await AsyncStorage.removeItem('idCarShop');
+      await AsyncStorage.removeItem('customerId');
       navigation.reset({
         index: 0,
         routes: [{ name: 'Login' }],
@@ -46,8 +49,10 @@ const ProfileCust = () => {
           body: JSON.stringify({ "id": customerId }),
         });
         const data = await response.json();
+        console.log(data);
         if (data.status === 'OK' && data.data) {
           setUserData(data.data);
+          setOriginalData(data.data); // Guardar los datos originales
           setName(data.data.personDto.name);
           setLastName(data.data.personDto.lastName);
           setPhone(data.data.personDto.phone);
@@ -70,11 +75,14 @@ const ProfileCust = () => {
       const customerId = await AsyncStorage.getItem('customerId');
       const formData = new FormData();
       formData.append('id', customerId);
-      formData.append('name', name);
-      formData.append('lastName', lastName);
-      formData.append('phone', phone);
-      formData.append('email', email);
-      formData.append('password', password);
+      
+      // Comprobar los cambios en los campos y agregarlos al formData
+      if (name !== originalData.personDto.name) formData.append('name', name);
+      if (lastName !== originalData.personDto.lastName) formData.append('lastName', lastName);
+      if (phone !== originalData.personDto.phone) formData.append('phone', phone);
+      if (email !== originalData.email) formData.append('email', email);
+      if (password !== '' && password === confirmPassword) formData.append('password', password);
+
       if (image) {
         const localUri = image;
         const filename = localUri.split('/').pop();
@@ -82,6 +90,7 @@ const ProfileCust = () => {
         const type = match ? `image/${match[1]}` : `image`;
         formData.append('image', { uri: localUri, name: filename, type });
       }
+
       const response = await fetch(`${API_URL}/api/customer/update`, {
         method: 'PUT',
         headers: {

@@ -26,7 +26,6 @@ const Record = () => {
         body: JSON.stringify({ "idCustomer": customerId }),
       });
       const data = await response.json();
-      console.log('ordenes', data.data);
       if (data.status === 'OK') {
         const sortedData = data.data.sort((a, b) => new Date(b.dateRequest) - new Date(a.dateRequest));
         setOrdersData(sortedData);

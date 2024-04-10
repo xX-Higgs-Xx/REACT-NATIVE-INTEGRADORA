@@ -6,12 +6,14 @@ import colors from '../../constants/colors';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_URL } from '../../constants/config';
 import { Ionicons } from '@expo/vector-icons';
+import Factura from '../../constants/factura';
 
 const SelecciónUbicación = ({ navigation }) => {
     const [userLocation, setUserLocation] = useState(null);
     const [selectedLocation, setSelectedLocation] = useState(null);
     const [carShopId, setCarShopId] = useState(null);
     const [isModalVisible, setIsModalVisible] = useState(false);
+    const [showFactura, setShowFactura] = useState(false);
 
     useEffect(() => {
         (async () => {
@@ -47,7 +49,6 @@ const SelecciónUbicación = ({ navigation }) => {
         }
     };
 
-
     const closeModal = () => {
         setIsModalVisible(false);
     };
@@ -55,7 +56,7 @@ const SelecciónUbicación = ({ navigation }) => {
     const confirmLocationAndCloseModal = async () => {
         if (selectedLocation && carShopId) {
             const { latitude, longitude } = selectedLocation;
-    
+
             const body = JSON.stringify({
                 latitue: latitude,
                 longitude: longitude,
@@ -87,6 +88,11 @@ const SelecciónUbicación = ({ navigation }) => {
         }
     };
 
+    const showFacturaComponent = () => {
+        setIsModalVisible(false); // Cerrar modal
+        setShowFactura(true); // Mostrar componente Factura
+    };
+
     return (
         <View style={styles.container}>
             {userLocation && (
@@ -97,7 +103,7 @@ const SelecciónUbicación = ({ navigation }) => {
                         latitude: userLocation.latitude,
                         longitude: userLocation.longitude,
                         latitudeDelta: 0.001,
-                        longitudeDelta: 0.006,
+                        longitudeDelta: 0.002,
                     }}
                     onPress={handleMapPress}
                 >
@@ -119,18 +125,24 @@ const SelecciónUbicación = ({ navigation }) => {
                         <TouchableOpacity style={styles.closeButton} onPress={closeModal}>
                             <Ionicons name="close-circle" size={24} color={colors.red3} />
                         </TouchableOpacity>
-                        <Text style={styles.modalText}>¿Desea facturar?</Text>
                         <View style={styles.modalButtonsContainer}>
-                            <TouchableOpacity style={styles.modalButton} onPress={closeModal}>
-                                <Text style={styles.modalButtonText}>Si</Text>
+                            <TouchableOpacity style={styles.modalButton} onPress={showFacturaComponent}>
+                                <Text style={styles.modalButtonText}>Generar factura</Text>
                             </TouchableOpacity>
                             <TouchableOpacity style={styles.modalButton} onPress={confirmLocationAndCloseModal}>
-                                <Text style={styles.modalButtonText}>No</Text>
+                                <Text style={styles.modalButtonText}>Terminar compra</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
                 </View>
             </Modal>
+            {showFactura && (
+                <Factura
+                    isVisible={showFactura}
+                    onClose={() => setShowFactura(false)}
+                    selectedLocation={selectedLocation}
+                />
+            )}
         </View>
     );
 };
@@ -174,14 +186,13 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         marginBottom: 20,
         textAlign: 'center',
-      },
+    },
     modalText: {
         fontSize: 18,
         marginBottom: 20,
     },
     modalButtonsContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
+
     },
     modalButton: {
         backgroundColor: colors.red3,
@@ -189,6 +200,7 @@ const styles = StyleSheet.create({
         paddingVertical: 10,
         paddingHorizontal: 20,
         marginHorizontal: 15,
+        marginTop: 15,
     },
     modalButtonText: {
         color: 'white',
