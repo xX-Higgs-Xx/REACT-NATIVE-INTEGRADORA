@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert, KeyboardAvoidingView, Platform } from 'react-native'; // Importa Alert desde 'react-native'
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert } from 'react-native'; // Importa Alert desde 'react-native'
 import Svg, { Circle, Ellipse, G, Path, Defs, ClipPath } from "react-native-svg";
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -133,7 +133,7 @@ const Login = () => {
       Alert.alert('Campos Vacíos', 'Por favor, complete todos los campos para iniciar sesión.');
       return;
     }
-    setLoading(true);
+    setLoading(true); 
     try {
       const response = await fetch(`${API_URL}/api/auth/signinClients`, {
         method: 'POST',
@@ -169,11 +169,7 @@ const Login = () => {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.containerMain}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined} // Ajusta el comportamiento según la plataforma
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : 0} // Ajusta el desplazamiento vertical para iOS
-    >
+    <View style={styles.containerMain}>
       <View style={styles.containerSVG}>
         <SvgTop />
       </View>
@@ -195,21 +191,21 @@ const Login = () => {
           value={password}
           onChangeText={setPassword}
         />
-        <TouchableOpacity style={styles.buttonRegis} onPress={() => navigation.navigate('Register')}>
-          <Text style={styles.textRegis}>Crear cuenta</Text>
-        </TouchableOpacity>
       </View>
+      <TouchableOpacity style={styles.buttonRegis} onPress={() => navigation.navigate('Register')}>
+        <Text style={styles.textRegis}>Crear cuenta</Text>
+      </TouchableOpacity>
       <View style={styles.footer}>
         <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
-          {loading ? (
-            <ActivityIndicator size="small" color="white" style={{ marginLeft: 80, marginTop: 10 }} />
+        {loading ? ( 
+            <ActivityIndicator size="small" color="white" style={{marginLeft: 80, marginTop: 10}} />
           ) : (
             <Text style={styles.buttonText}>Login</Text>
           )}
         </TouchableOpacity>
       </View>
       <StatusBar style="auto" />
-    </KeyboardAvoidingView>
+    </View>
   );
 }
 
@@ -257,13 +253,9 @@ const styles = StyleSheet.create({
     marginTop: 15
   },
   form: {
-    position: 'absolute',
-    bottom: 75,
-    left: 0,
-    alignItems: 'center',
+    alignItems: 'flex-end',
     width: '100%',
     marginRight: 80,
-    backgroundColor: '#f1f1f1',
   },
   button: {
     backgroundColor: '#A62940',
@@ -283,7 +275,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: -55,
     right: -40,
-    width: '120%',
+    width: '100%',
     alignItems: 'flex-end',
     justifyContent: 'center',
     backgroundColor: '#f1f1f1',
