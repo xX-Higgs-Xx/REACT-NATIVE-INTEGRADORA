@@ -188,9 +188,6 @@ const styles = StyleSheet.create({
         fontSize: 18,
         marginBottom: 20,
     },
-    modalButtonsContainer: {
-
-    },
     modalButton: {
         backgroundColor: colors.red3,
         borderRadius: 10,

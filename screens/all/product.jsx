@@ -146,7 +146,7 @@ const ProductScreen = ({ route, navigation }) => {
                 <View style={styles.infoContainer}>
                     <Text style={styles.name}>{name}</Text>
                     <Text style={styles.description}>{description}</Text>
-                    {/* <Text style={styles.quantity}>En existencia: {quantity}</Text> */}
+                    <Text style={styles.quantity}>En existencia: {quantity}</Text>
                 </View>
                 <View style={styles.optionsContainer}>
                     <Text style={styles.selectLabel}>Preparaciones especiales</Text>
@@ -163,7 +163,7 @@ const ProductScreen = ({ route, navigation }) => {
                                 <View style={styles.textContainer}>
                                     <View style={styles.titleOptions}>
                                         <Text style={styles.optionName}>{option.name}</Text>
-                                        <Text style={styles.optionCost}>${option.price} x kg</Text>
+                                        <Text style={styles.optionCost}>${(option.price || 0)} x kg</Text>
                                     </View>
                                     <Text style={styles.optionDescription}>{option.description}</Text>
                                 </View>

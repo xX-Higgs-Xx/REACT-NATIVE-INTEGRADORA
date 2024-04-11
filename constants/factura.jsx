@@ -6,6 +6,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_URL } from './config';
 import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
+import colors from './colors';
+import { Ionicons } from '@expo/vector-icons';
 
 const Factura = ({ isVisible, onClose, selectedLocation }) => {
   const [rfc, setRFC] = useState("");
@@ -45,7 +47,7 @@ const Factura = ({ isVisible, onClose, selectedLocation }) => {
         });
         const data = await response.json();
         Alert.alert('Pedido en curso', 'Puedes ver tu pedido en el historial.');
-        
+
         generatePdf();
         navigation.navigate('Index');
         onClose();
@@ -320,17 +322,20 @@ const Factura = ({ isVisible, onClose, selectedLocation }) => {
       <View style={styles.modalContainer}>
         <View style={styles.modalContent}>
           <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-            <Text>Cerrar</Text>
+            <Ionicons name="close-circle" size={24} color={colors.red3} />
           </TouchableOpacity>
           <View style={styles.container}>
+            <Text style={{ marginBottom: 5, color: colors.grey }}>Ingresa tu RFC:</Text>
             <TextInput
               value={rfc}
-              placeholder='RFC'
               style={styles.textInput}
               onChangeText={(value) => setRFC(value)}
             />
-            <Button title='Generar PDF' onPress={confirmLocationAndGeneratePdf}></Button>
-            <Button title='Cancelar' onPress={onClose}></Button>
+            <View>
+              <TouchableOpacity style={styles.modalButton} onPress={confirmLocationAndGeneratePdf}>
+                <Text style={styles.modalButtonText}>Generar PDF</Text>
+              </TouchableOpacity>
+            </View>
             <StatusBar style="auto" />
           </View>
         </View>
@@ -369,8 +374,51 @@ const styles = StyleSheet.create({
     height: 40,
     borderColor: 'gray',
     borderWidth: 1,
-    paddingHorizontal: 10,
+    paddingHorizontal: 20,
     marginBottom: 20,
+    borderRadius: 25,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    borderRadius: 10,
+    paddingHorizontal: 45,
+    paddingVertical: 5,
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  modalText: {
+    fontSize: 18,
+    marginBottom: 20,
+  },
+  modalButton: {
+    backgroundColor: colors.red3,
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    marginHorizontal: 15,
+    marginTop: 15,
+  },
+  modalButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    backgroundColor: 'transparent',
+    padding: 5,
   },
 });
 
