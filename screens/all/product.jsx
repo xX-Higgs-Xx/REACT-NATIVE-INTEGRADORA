@@ -120,7 +120,6 @@ const ProductScreen = ({ route, navigation }) => {
                     body: JSON.stringify(productToAdd)
                 });
                 const responseData = await response.json();
-                console.log('Producto en el carrito: ', responseData);
                 Alert.alert('Éxito', 'El producto se ha agregado al carrito correctamente.');
                 navigation.goBack();
             } else {
@@ -147,7 +146,7 @@ const ProductScreen = ({ route, navigation }) => {
                 <View style={styles.infoContainer}>
                     <Text style={styles.name}>{name}</Text>
                     <Text style={styles.description}>{description}</Text>
-                    <Text style={styles.quantity}>En existencia: {quantity}</Text>
+                    {/* <Text style={styles.quantity}>En existencia: {quantity}</Text> */}
                 </View>
                 <View style={styles.optionsContainer}>
                     <Text style={styles.selectLabel}>Preparaciones especiales</Text>

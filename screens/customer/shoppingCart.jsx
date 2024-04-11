@@ -39,7 +39,6 @@ const ShoppingCart = () => {
           Authorization: token,
         }
       });
-      console.log('carrito',response.data.data);
       setMeats(response.data.data);
 
       if (response.data.data.length > 0) {
@@ -118,7 +117,6 @@ const ShoppingCart = () => {
         }
       });
 
-      console.log(`actualizacion: `, response);
       if (response.status === 200) {
         // Actualiza los datos locales (si es necesario)
         // Cierra el modal
@@ -145,7 +143,6 @@ const ShoppingCart = () => {
       };
 
       const token = await AsyncStorage.getItem('token');
-      console.log(selectedItem.id);
 
       const response = await fetch(`${API_URL}/api/cardsitems/delete`, {
         method: 'POST',
@@ -156,7 +153,6 @@ const ShoppingCart = () => {
         body: JSON.stringify(data)
       });
 
-      console.log('Eliminación exitosa:', response);
 
       if (response.status === 200) {
         setIsModalVisible(false); // Cierra el modal

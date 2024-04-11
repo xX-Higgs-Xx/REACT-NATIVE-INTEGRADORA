@@ -49,7 +49,6 @@ const ProfileCust = () => {
           body: JSON.stringify({ "id": customerId }),
         });
         const data = await response.json();
-        console.log(data);
         if (data.status === 'OK' && data.data) {
           setUserData(data.data);
           setOriginalData(data.data); // Guardar los datos originales
@@ -99,7 +98,6 @@ const ProfileCust = () => {
         body: formData,
       });
       const data = await response.json();
-      console.log('Respuesta del servidor al guardar cambios:', data);
       setMessage('Datos actualizados exitosamente');
       Alert.alert('Éxito', 'Los datos se han guardado correctamente.');
     } catch (error) {
@@ -214,7 +212,7 @@ const ProfileCust = () => {
 const styles = StyleSheet.create({
   scrollContainer: {
     flexGrow: 1,
-    paddingVertical: 60,
+    paddingVertical: 90,
   },
   container: {
     flex: 1,

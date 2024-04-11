@@ -144,7 +144,6 @@ const Login = () => {
       });
 
       const data = await response.json();
-      console.log(data);
 
       const customerId = data.data.body.data.id;
       const carShopId = data.data.body.data.carShopBean.id;

@@ -63,10 +63,8 @@ const SelecciónUbicación = ({ navigation }) => {
                 idCarShop: carShopId
             });
 
-            console.log(body);
             try {
                 const token = await AsyncStorage.getItem('token');
-                console.log(token);
                 const response = await fetch(`${API_URL}/api/order/add`, {
                     method: 'POST',
                     headers: {
@@ -76,7 +74,6 @@ const SelecciónUbicación = ({ navigation }) => {
                     body: body
                 });
                 const data = await response.json();
-                console.log('Respuesta del servidor:', data);
                 Alert.alert('Pedido en curso', 'Puedes ver tu pedido en el historial.');
                 navigation.navigate('Index');
             } catch (error) {

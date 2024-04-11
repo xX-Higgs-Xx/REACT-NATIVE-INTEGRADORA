@@ -55,7 +55,6 @@ const Register = () => {
                     'Content-Type': 'multipart/form-data',
                 },
             });
-            console.log('status del response: ', response.status);
             if (response.status === 200) {
                 navigation.replace('Login');
                 Alert.alert('Usuario creado exitosamente');
